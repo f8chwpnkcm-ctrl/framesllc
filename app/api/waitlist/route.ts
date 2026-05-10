@@ -1,5 +1,3 @@
-export const runtime = 'edge'
-
 export async function POST(request: Request) {
   const { email } = await request.json()
 
@@ -9,6 +7,9 @@ export async function POST(request: Request) {
 
   try {
     const db = (process.env as any).DB
+    if (!db) {
+      return Response.json({ error: 'DB not found' }, { status: 500 })
+    }
     await db.prepare('INSERT INTO waitlist (email) VALUES (?)').bind(email).run()
     return Response.json({ success: true })
   } catch (e: any) {
