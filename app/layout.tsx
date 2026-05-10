@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   title: "Nodable.",
   description: "Where standards are set.",
   icons: {
-    icon: "/CROWN-PFP.png",
+    icon: "/favicon.ico",
     apple: "/CROWN-PFP.png",
   },
 };
