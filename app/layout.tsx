@@ -10,6 +10,10 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Nodable.",
   description: "Where standards are set.",
+  icons: {
+    icon: "/CROWN-PFP.png",
+    apple: "/CROWN-PFP.png",
+  },
 };
 
 export default function RootLayout({
