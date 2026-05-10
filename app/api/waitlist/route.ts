@@ -1,3 +1,5 @@
+import { getRequestContext } from '@cloudflare/next-on-pages'
+
 export const runtime = 'edge'
 
 export async function POST(request: Request) {
@@ -8,7 +10,8 @@ export async function POST(request: Request) {
   }
 
   try {
-    const db = (process.env as any).DB
+    const { env } = getRequestContext()
+    const db = env.DB
     await db.prepare('INSERT INTO waitlist (email) VALUES (?)').bind(email).run()
     return Response.json({ success: true })
   } catch (e: any) {
