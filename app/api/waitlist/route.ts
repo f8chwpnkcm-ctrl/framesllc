@@ -10,14 +10,16 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { env } = getRequestContext()
-    const db = env.DB
+    const ctx = getRequestContext()
+    const db = ctx.env.DB
+
+    if (!db) {
+      return Response.json({ error: 'DB binding not found' }, { status: 500 })
+    }
+
     await db.prepare('INSERT INTO waitlist (email) VALUES (?)').bind(email).run()
     return Response.json({ success: true })
   } catch (e: any) {
-    if (e.message?.includes('UNIQUE')) {
-      return Response.json({ error: 'Already on the waitlist!' }, { status: 409 })
-    }
-    return Response.json({ error: 'Something went wrong' }, { status: 500 })
+    return Response.json({ error: e.message || 'Unknown error' }, { status: 500 })
   }
 }
