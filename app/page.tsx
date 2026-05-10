@@ -48,19 +48,16 @@ function WaitlistModal({ onClose }: { onClose: () => void }) {
         >
           ✕
         </button>
-
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,229,0,0.1)', border: '0.5px solid rgba(255,229,0,0.25)', padding: '5px 12px', borderRadius: '20px', marginBottom: '24px', width: 'fit-content' }}>
           <div style={{ width: '5px', height: '5px', background: '#FFE500', borderRadius: '50%' }}></div>
           <span className="gradient-text" style={{ fontSize: '11px', fontWeight: '600' }}>Now in beta</span>
         </div>
-
         <h2 style={{ color: '#fff', fontSize: '28px', fontWeight: '700', letterSpacing: '-0.02em', margin: '0 0 8px' }}>
           Your work belongs here.
         </h2>
         <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '14px', lineHeight: '1.6', margin: '0 0 28px' }}>
           Join the waitlist and get early access when we launch.
         </p>
-
         {status === 'success' ? (
           <div style={{ background: 'rgba(255,229,0,0.1)', border: '0.5px solid rgba(255,229,0,0.3)', borderRadius: '12px', padding: '20px', textAlign: 'center' }}>
             <div style={{ fontSize: '24px', marginBottom: '8px' }}>👑</div>
@@ -95,19 +92,23 @@ function WaitlistModal({ onClose }: { onClose: () => void }) {
 }
 
 export default function Home() {
+  const [modalOpen, setModalOpen] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const bgRef = useRef<SVGSVGElement>(null)
   const ctaRef = useRef<HTMLDivElement>(null)
-  const [modalOpen, setModalOpen] = useState(false)
 
   useEffect(() => {
-    const handleScroll = () => {
-      if (bgRef.current) {
-        const scrollY = window.scrollY
-        bgRef.current.style.transform = `translate(-50%, calc(-50% + ${scrollY * 0.15}px)) scale(${1 + scrollY * 0.0003})`
+    setIsMobile(window.innerWidth < 768)
+    if (window.innerWidth >= 768) {
+      const handleScroll = () => {
+        if (bgRef.current) {
+          const scrollY = window.scrollY
+          bgRef.current.style.transform = `translate(-50%, calc(-50% + ${scrollY * 0.15}px)) scale(${1 + scrollY * 0.0003})`
+        }
       }
+      window.addEventListener('scroll', handleScroll, { passive: true })
+      return () => window.removeEventListener('scroll', handleScroll)
     }
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
   const marqueeItems = [
@@ -193,71 +194,77 @@ export default function Home() {
         .pricing-card { transition: transform 0.2s ease, border-color 0.2s ease; }
         .pricing-card:hover { transform: translateY(-4px); }
         .crown-slap { animation: float 4s ease-in-out infinite; }
+        @media (max-width: 768px) {
+          .desktop-only { display: none !important; }
+        }
       `}</style>
 
-      {/* Hero background */}
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '100vh', zIndex: 0, pointerEvents: 'none', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -55%)', width: '700px', height: '700px', opacity: 0.04 }}>
-          <Image src="/CROWN-TRANSPARENT.png" alt="" fill style={{ objectFit: 'contain' }} />
+      {/* Hero background - desktop only */}
+      {!isMobile && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '100vh', zIndex: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -55%)', width: '700px', height: '700px', opacity: 0.04 }}>
+            <Image src="/CROWN-TRANSPARENT.png" alt="" fill style={{ objectFit: 'contain' }} />
+          </div>
+          <svg ref={bgRef} width="1600" height="1600" viewBox="0 0 1600 1600" fill="none"
+            style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', transformOrigin: 'center', willChange: 'transform' }}>
+            <circle cx="800" cy="800" r="4" fill="#FFE500" style={{ animation: 'pulse-node 2.5s ease-in-out infinite' }}/>
+            <circle cx="300" cy="300" r="3" fill="#FFE500" style={{ animation: 'pulse-node-sm 4s ease-in-out infinite 0.5s' }}/>
+            <circle cx="1300" cy="250" r="3" fill="#FFE500" style={{ animation: 'pulse-node-sm 3.5s ease-in-out infinite 1s' }}/>
+            <circle cx="200" cy="900" r="2.5" fill="#FFE500" style={{ animation: 'pulse-node-sm 4.5s ease-in-out infinite 0.2s' }}/>
+            <circle cx="1400" cy="950" r="3" fill="#FFE500" style={{ animation: 'pulse-node-sm 3s ease-in-out infinite 1.5s' }}/>
+            <circle cx="700" cy="150" r="2" fill="#FFE500" style={{ animation: 'pulse-node-sm 5s ease-in-out infinite 0.8s' }}/>
+            <circle cx="1450" cy="600" r="2.5" fill="#FFE500" style={{ animation: 'pulse-node-sm 3.8s ease-in-out infinite 0.3s' }}/>
+            <circle cx="150" cy="600" r="2" fill="#FFE500" style={{ animation: 'pulse-node-sm 4.2s ease-in-out infinite 1.2s' }}/>
+            <circle cx="900" cy="1400" r="2.5" fill="#FFE500" style={{ animation: 'pulse-node-sm 3.3s ease-in-out infinite 0.7s' }}/>
+            <circle cx="500" cy="1300" r="2" fill="#FFE500" style={{ animation: 'pulse-node-sm 4.8s ease-in-out infinite 0.4s' }}/>
+            <circle cx="1100" cy="400" r="2.5" fill="#FFE500" style={{ animation: 'pulse-node-sm 3.6s ease-in-out infinite 1.8s' }}/>
+            <circle cx="450" cy="700" r="2" fill="#FFE500" style={{ animation: 'pulse-node-sm 4s ease-in-out infinite 0.9s' }}/>
+            <circle cx="1150" cy="1100" r="2.5" fill="#FFE500" style={{ animation: 'pulse-node-sm 3.2s ease-in-out infinite 1.1s' }}/>
+            <circle cx="600" cy="1050" r="2" fill="#FFE500" style={{ animation: 'pulse-node-sm 4.4s ease-in-out infinite 0.6s' }}/>
+            <circle cx="1050" cy="700" r="2" fill="#FFE500" style={{ animation: 'pulse-node-sm 3.9s ease-in-out infinite 1.3s' }}/>
+            <line x1="800" y1="800" x2="300" y2="300" stroke="#FFE500" strokeWidth="0.5" style={{ animation: 'glow-line 4s ease-in-out infinite' }}/>
+            <line x1="800" y1="800" x2="1300" y2="250" stroke="#FFE500" strokeWidth="0.5" style={{ animation: 'glow-line 3.5s ease-in-out infinite 0.5s' }}/>
+            <line x1="800" y1="800" x2="200" y2="900" stroke="#FFE500" strokeWidth="0.5" style={{ animation: 'glow-line 4.5s ease-in-out infinite 1s' }}/>
+            <line x1="800" y1="800" x2="1400" y2="950" stroke="#FFE500" strokeWidth="0.5" style={{ animation: 'glow-line 3s ease-in-out infinite 0.3s' }}/>
+            <line x1="800" y1="800" x2="700" y2="150" stroke="#FFE500" strokeWidth="0.5" style={{ animation: 'glow-line 4.2s ease-in-out infinite 1.5s' }}/>
+            <line x1="800" y1="800" x2="1450" y2="600" stroke="#FFE500" strokeWidth="0.5" style={{ animation: 'glow-line 3.8s ease-in-out infinite 0.8s' }}/>
+            <line x1="800" y1="800" x2="150" y2="600" stroke="#FFE500" strokeWidth="0.5" style={{ animation: 'glow-line 4.8s ease-in-out infinite 0.2s' }}/>
+            <line x1="800" y1="800" x2="900" y2="1400" stroke="#FFE500" strokeWidth="0.5" style={{ animation: 'glow-line 3.6s ease-in-out infinite 1.2s' }}/>
+            <line x1="800" y1="800" x2="500" y2="1300" stroke="#FFE500" strokeWidth="0.5" style={{ animation: 'glow-line 4s ease-in-out infinite 0.6s' }}/>
+            <line x1="800" y1="800" x2="1100" y2="400" stroke="#FFE500" strokeWidth="0.5" style={{ animation: 'glow-line 3.4s ease-in-out infinite 1.4s' }}/>
+            <line x1="800" y1="800" x2="450" y2="700" stroke="#FFE500" strokeWidth="0.5" style={{ animation: 'glow-line 4.6s ease-in-out infinite 0.1s' }}/>
+            <line x1="800" y1="800" x2="1150" y2="1100" stroke="#FFE500" strokeWidth="0.5" style={{ animation: 'glow-line 3.2s ease-in-out infinite 1.8s' }}/>
+            <line x1="800" y1="800" x2="600" y2="1050" stroke="#FFE500" strokeWidth="0.5" style={{ animation: 'glow-line 4.4s ease-in-out infinite 0.4s' }}/>
+            <line x1="800" y1="800" x2="1050" y2="700" stroke="#FFE500" strokeWidth="0.5" style={{ animation: 'glow-line 3.9s ease-in-out infinite 1.1s' }}/>
+            <line x1="300" y1="300" x2="700" y2="150" stroke="#FFE500" strokeWidth="0.3" opacity="0.06"/>
+            <line x1="1300" y1="250" x2="1450" y2="600" stroke="#FFE500" strokeWidth="0.3" opacity="0.06"/>
+            <line x1="200" y1="900" x2="500" y2="1300" stroke="#FFE500" strokeWidth="0.3" opacity="0.06"/>
+            <line x1="1400" y1="950" x2="1150" y2="1100" stroke="#FFE500" strokeWidth="0.3" opacity="0.06"/>
+            <line x1="450" y1="700" x2="150" y2="600" stroke="#FFE500" strokeWidth="0.3" opacity="0.06"/>
+            <line x1="1050" y1="700" x2="1100" y2="400" stroke="#FFE500" strokeWidth="0.3" opacity="0.06"/>
+            <line x1="600" y1="1050" x2="900" y2="1400" stroke="#FFE500" strokeWidth="0.3" opacity="0.06"/>
+          </svg>
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '250px', background: 'linear-gradient(to bottom, transparent, #0a0a0a)', pointerEvents: 'none' }}/>
         </div>
-        <svg ref={bgRef} width="1600" height="1600" viewBox="0 0 1600 1600" fill="none"
-          style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', transformOrigin: 'center', willChange: 'transform' }}>
-          <circle cx="800" cy="800" r="4" fill="#FFE500" style={{ animation: 'pulse-node 2.5s ease-in-out infinite' }}/>
-          <circle cx="300" cy="300" r="3" fill="#FFE500" style={{ animation: 'pulse-node-sm 4s ease-in-out infinite 0.5s' }}/>
-          <circle cx="1300" cy="250" r="3" fill="#FFE500" style={{ animation: 'pulse-node-sm 3.5s ease-in-out infinite 1s' }}/>
-          <circle cx="200" cy="900" r="2.5" fill="#FFE500" style={{ animation: 'pulse-node-sm 4.5s ease-in-out infinite 0.2s' }}/>
-          <circle cx="1400" cy="950" r="3" fill="#FFE500" style={{ animation: 'pulse-node-sm 3s ease-in-out infinite 1.5s' }}/>
-          <circle cx="700" cy="150" r="2" fill="#FFE500" style={{ animation: 'pulse-node-sm 5s ease-in-out infinite 0.8s' }}/>
-          <circle cx="1450" cy="600" r="2.5" fill="#FFE500" style={{ animation: 'pulse-node-sm 3.8s ease-in-out infinite 0.3s' }}/>
-          <circle cx="150" cy="600" r="2" fill="#FFE500" style={{ animation: 'pulse-node-sm 4.2s ease-in-out infinite 1.2s' }}/>
-          <circle cx="900" cy="1400" r="2.5" fill="#FFE500" style={{ animation: 'pulse-node-sm 3.3s ease-in-out infinite 0.7s' }}/>
-          <circle cx="500" cy="1300" r="2" fill="#FFE500" style={{ animation: 'pulse-node-sm 4.8s ease-in-out infinite 0.4s' }}/>
-          <circle cx="1100" cy="400" r="2.5" fill="#FFE500" style={{ animation: 'pulse-node-sm 3.6s ease-in-out infinite 1.8s' }}/>
-          <circle cx="450" cy="700" r="2" fill="#FFE500" style={{ animation: 'pulse-node-sm 4s ease-in-out infinite 0.9s' }}/>
-          <circle cx="1150" cy="1100" r="2.5" fill="#FFE500" style={{ animation: 'pulse-node-sm 3.2s ease-in-out infinite 1.1s' }}/>
-          <circle cx="600" cy="1050" r="2" fill="#FFE500" style={{ animation: 'pulse-node-sm 4.4s ease-in-out infinite 0.6s' }}/>
-          <circle cx="1050" cy="700" r="2" fill="#FFE500" style={{ animation: 'pulse-node-sm 3.9s ease-in-out infinite 1.3s' }}/>
-          <line x1="800" y1="800" x2="300" y2="300" stroke="#FFE500" strokeWidth="0.5" style={{ animation: 'glow-line 4s ease-in-out infinite' }}/>
-          <line x1="800" y1="800" x2="1300" y2="250" stroke="#FFE500" strokeWidth="0.5" style={{ animation: 'glow-line 3.5s ease-in-out infinite 0.5s' }}/>
-          <line x1="800" y1="800" x2="200" y2="900" stroke="#FFE500" strokeWidth="0.5" style={{ animation: 'glow-line 4.5s ease-in-out infinite 1s' }}/>
-          <line x1="800" y1="800" x2="1400" y2="950" stroke="#FFE500" strokeWidth="0.5" style={{ animation: 'glow-line 3s ease-in-out infinite 0.3s' }}/>
-          <line x1="800" y1="800" x2="700" y2="150" stroke="#FFE500" strokeWidth="0.5" style={{ animation: 'glow-line 4.2s ease-in-out infinite 1.5s' }}/>
-          <line x1="800" y1="800" x2="1450" y2="600" stroke="#FFE500" strokeWidth="0.5" style={{ animation: 'glow-line 3.8s ease-in-out infinite 0.8s' }}/>
-          <line x1="800" y1="800" x2="150" y2="600" stroke="#FFE500" strokeWidth="0.5" style={{ animation: 'glow-line 4.8s ease-in-out infinite 0.2s' }}/>
-          <line x1="800" y1="800" x2="900" y2="1400" stroke="#FFE500" strokeWidth="0.5" style={{ animation: 'glow-line 3.6s ease-in-out infinite 1.2s' }}/>
-          <line x1="800" y1="800" x2="500" y2="1300" stroke="#FFE500" strokeWidth="0.5" style={{ animation: 'glow-line 4s ease-in-out infinite 0.6s' }}/>
-          <line x1="800" y1="800" x2="1100" y2="400" stroke="#FFE500" strokeWidth="0.5" style={{ animation: 'glow-line 3.4s ease-in-out infinite 1.4s' }}/>
-          <line x1="800" y1="800" x2="450" y2="700" stroke="#FFE500" strokeWidth="0.5" style={{ animation: 'glow-line 4.6s ease-in-out infinite 0.1s' }}/>
-          <line x1="800" y1="800" x2="1150" y2="1100" stroke="#FFE500" strokeWidth="0.5" style={{ animation: 'glow-line 3.2s ease-in-out infinite 1.8s' }}/>
-          <line x1="800" y1="800" x2="600" y2="1050" stroke="#FFE500" strokeWidth="0.5" style={{ animation: 'glow-line 4.4s ease-in-out infinite 0.4s' }}/>
-          <line x1="800" y1="800" x2="1050" y2="700" stroke="#FFE500" strokeWidth="0.5" style={{ animation: 'glow-line 3.9s ease-in-out infinite 1.1s' }}/>
-          <line x1="300" y1="300" x2="700" y2="150" stroke="#FFE500" strokeWidth="0.3" opacity="0.06"/>
-          <line x1="1300" y1="250" x2="1450" y2="600" stroke="#FFE500" strokeWidth="0.3" opacity="0.06"/>
-          <line x1="200" y1="900" x2="500" y2="1300" stroke="#FFE500" strokeWidth="0.3" opacity="0.06"/>
-          <line x1="1400" y1="950" x2="1150" y2="1100" stroke="#FFE500" strokeWidth="0.3" opacity="0.06"/>
-          <line x1="450" y1="700" x2="150" y2="600" stroke="#FFE500" strokeWidth="0.3" opacity="0.06"/>
-          <line x1="1050" y1="700" x2="1100" y2="400" stroke="#FFE500" strokeWidth="0.3" opacity="0.06"/>
-          <line x1="600" y1="1050" x2="900" y2="1400" stroke="#FFE500" strokeWidth="0.3" opacity="0.06"/>
-        </svg>
-        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '250px', background: 'linear-gradient(to bottom, transparent, #0a0a0a)', pointerEvents: 'none' }}/>
-      </div>
+      )}
 
       <div style={{ position: 'relative', zIndex: 1 }}>
         <ScrollObserver />
         <Navbar onJoinWaitlist={() => setModalOpen(true)} />
+
         {/* Hero */}
-        <section style={{ padding: '90px 40px 60px', maxWidth: '680px', margin: '0 auto', textAlign: 'center' }}>
+        <section style={{ padding: isMobile ? '60px 24px 40px' : '90px 40px 60px', maxWidth: '680px', margin: '0 auto', textAlign: 'center' }}>
           <div className="hero-animate-0" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255,229,0,0.1)', border: '0.5px solid rgba(255,229,0,0.25)', padding: '5px 12px', borderRadius: '20px', marginBottom: '28px' }}>
             <div style={{ width: '5px', height: '5px', background: '#FFE500', borderRadius: '50%' }}></div>
             <span className="gradient-text" style={{ fontSize: '11px', fontWeight: '600' }}>Now in beta</span>
           </div>
-          <h1 className="hero-animate-1" style={{ color: '#fff', fontSize: '56px', fontWeight: '700', letterSpacing: '-0.03em', lineHeight: '1.04', margin: '0 0 20px' }}>
+          <h1 className="hero-animate-1" style={{ color: '#fff', fontSize: isMobile ? '36px' : '56px', fontWeight: '700', letterSpacing: '-0.03em', lineHeight: '1.04', margin: '0 0 20px' }}>
             Where the<br /><span className="gradient-text">standards are set.</span>
           </h1>
           <p className="hero-animate-2" style={{ color: 'rgba(255,255,255,0.45)', fontSize: '16px', lineHeight: '1.7', margin: '0 auto 36px', maxWidth: '420px' }}>
             Built by creators, for creators. From tools to assets, we've got you covered.
           </p>
-          <div className="hero-animate-3" style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+          <div className="hero-animate-3" style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' as const }}>
             <button onClick={() => setModalOpen(true)} className="btn-primary" style={{ background: '#FFE500', color: '#000', fontSize: '14px', fontWeight: '700', padding: '13px 26px', borderRadius: '8px', border: 'none', cursor: 'pointer' }}>
               Join the waitlist
             </button>
@@ -292,10 +299,10 @@ export default function Home() {
         </div>
 
         {/* Features */}
-        <section style={{ padding: '64px 40px', textAlign: 'center' }}>
+        <section style={{ padding: isMobile ? '40px 24px' : '64px 40px', textAlign: 'center' }}>
           <div className="fade-up" style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase' as const, marginBottom: '10px' }}>What's on Nodable</div>
-          <h2 className="fade-up fade-up-delay-1" style={{ color: '#fff', fontSize: '32px', fontWeight: '700', letterSpacing: '-0.02em', margin: '0 0 32px' }}>Every tool you need.<br />Nothing you don't.</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', textAlign: 'left' }}>
+          <h2 className="fade-up fade-up-delay-1" style={{ color: '#fff', fontSize: isMobile ? '24px' : '32px', fontWeight: '700', letterSpacing: '-0.02em', margin: '0 0 32px' }}>Every tool you need.<br />Nothing you don't.</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: '12px', textAlign: 'left' }}>
             {features.map((f, i) => (
               <a key={f.title} href={f.href} className={`feature-link card-hover fade-up fade-up-delay-${i + 1}`} style={{ background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '24px' }}>
                 <div style={{ width: '40px', height: '40px', background: 'rgba(255,229,0,0.08)', borderRadius: '10px', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -309,15 +316,15 @@ export default function Home() {
         </section>
 
         {/* Verified strip */}
-        <div className="fade-up" style={{ margin: '0 40px 56px', background: 'rgba(255,229,0,0.05)', border: '0.5px solid rgba(255,229,0,0.15)', borderRadius: '12px', padding: '24px 28px' }}>
+        <div className="fade-up" style={{ margin: isMobile ? '0 24px 40px' : '0 40px 56px', background: 'rgba(255,229,0,0.05)', border: '0.5px solid rgba(255,229,0,0.15)', borderRadius: '12px', padding: '24px 28px' }}>
           <div style={{ color: '#fff', fontSize: '15px', fontWeight: '700', marginBottom: '6px' }}>Creator verified.</div>
           <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px', lineHeight: '1.6' }}>Every LUT requires a clip/photo showing real use, a before/after image, or manual review. No filler packs.</div>
         </div>
 
         {/* CTA */}
-        <div ref={ctaRef} className="fade-up" style={{ margin: '0 40px 0', background: '#FFE500', borderRadius: '14px', padding: '40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '24px' }}>
+        <div ref={ctaRef} className="fade-up" style={{ margin: isMobile ? '0 24px' : '0 40px 0', background: '#FFE500', borderRadius: '14px', padding: isMobile ? '32px 24px' : '40px', display: 'flex', alignItems: isMobile ? 'flex-start' : 'center', justifyContent: 'space-between', gap: '24px', flexDirection: isMobile ? 'column' as const : 'row' as const }}>
           <div>
-            <h3 style={{ color: '#000', fontSize: '26px', fontWeight: '700', letterSpacing: '-0.02em', margin: '0 0 6px' }}>Your work belongs here.</h3>
+            <h3 style={{ color: '#000', fontSize: isMobile ? '22px' : '26px', fontWeight: '700', letterSpacing: '-0.02em', margin: '0 0 6px' }}>Your work belongs here.</h3>
             <p style={{ color: 'rgba(0,0,0,0.55)', fontSize: '14px', margin: 0 }}>Join the waitlist and get early access when we launch.</p>
           </div>
           <button onClick={() => setModalOpen(true)} className="btn-primary" style={{ background: '#000', color: '#FFE500', fontSize: '14px', fontWeight: '700', padding: '13px 26px', borderRadius: '8px', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' as const, fontFamily: 'var(--font-inter), sans-serif' }}>
@@ -326,7 +333,7 @@ export default function Home() {
         </div>
 
         {/* Nodes & Crowns */}
-        <section style={{ padding: '100px 40px 80px' }}>
+        <section style={{ padding: isMobile ? '60px 24px 40px' : '100px 40px 80px' }}>
           <div className="fade-up" style={{ textAlign: 'center', marginBottom: '64px' }}>
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
               <Image
@@ -339,7 +346,7 @@ export default function Home() {
               />
             </div>
             <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase' as const, marginBottom: '12px' }}>The Nodable network</div>
-            <h2 style={{ color: '#fff', fontSize: '40px', fontWeight: '700', letterSpacing: '-0.03em', lineHeight: '1.06', margin: '0 0 16px' }}>
+            <h2 style={{ color: '#fff', fontSize: isMobile ? '30px' : '40px', fontWeight: '700', letterSpacing: '-0.03em', lineHeight: '1.06', margin: '0 0 16px' }}>
               Earn your place<br />in the <span className="gradient-text">network.</span>
             </h2>
             <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '15px', lineHeight: '1.7', maxWidth: '460px', margin: '0 auto' }}>
@@ -347,7 +354,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px' }}>
             <div className="fade-up fade-up-delay-1" style={{ background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '20px', padding: '40px', position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '200px', height: '200px', background: 'radial-gradient(circle, rgba(255,229,0,0.06) 0%, transparent 70%)', pointerEvents: 'none' }}/>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
@@ -431,10 +438,10 @@ export default function Home() {
         </section>
 
         {/* Crown pricing */}
-        <section style={{ padding: '0 40px 100px' }}>
+        <section style={{ padding: isMobile ? '0 24px 60px' : '0 40px 100px' }}>
           <div className="fade-up" style={{ textAlign: 'center', marginBottom: '56px' }}>
             <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase' as const, marginBottom: '12px' }}>Crown packages</div>
-            <h2 style={{ color: '#fff', fontSize: '40px', fontWeight: '700', letterSpacing: '-0.03em', lineHeight: '1.06', margin: '0 0 16px' }}>
+            <h2 style={{ color: '#fff', fontSize: isMobile ? '30px' : '40px', fontWeight: '700', letterSpacing: '-0.03em', lineHeight: '1.06', margin: '0 0 16px' }}>
               Get Crowns.<br /><span className="gradient-text">Unlock everything.</span>
             </h2>
             <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '15px', lineHeight: '1.7', maxWidth: '400px', margin: '0 auto' }}>
@@ -442,7 +449,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '40px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: '16px', marginBottom: '40px' }}>
             {crownPackages.map((pkg, i) => (
               <div key={pkg.name} className={`pricing-card fade-up fade-up-delay-${i + 1}`} style={{
                 background: pkg.featured ? 'rgba(255,229,0,0.06)' : 'rgba(255,255,255,0.03)',
@@ -498,12 +505,12 @@ export default function Home() {
             ))}
           </div>
 
-          <div className="fade-up" style={{ background: 'rgba(255,255,255,0.02)', border: '0.5px solid rgba(255,255,255,0.06)', borderRadius: '14px', padding: '24px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div className="fade-up" style={{ background: 'rgba(255,255,255,0.02)', border: '0.5px solid rgba(255,255,255,0.06)', borderRadius: '14px', padding: '24px 32px', display: 'flex', alignItems: isMobile ? 'flex-start' : 'center', justifyContent: 'space-between', flexDirection: isMobile ? 'column' as const : 'row' as const, gap: '16px' }}>
             <div>
               <div style={{ color: '#fff', fontSize: '14px', fontWeight: '700', marginBottom: '4px' }}>Don't want to spend? You don't have to.</div>
               <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px' }}>Upload a verified LUT and earn 50 Crowns. Get downloads, earn more. The network that rewards contributors.</div>
             </div>
-            <button onClick={() => setModalOpen(true)} style={{ background: 'transparent', border: '0.5px solid rgba(255,229,0,0.3)', color: '#FFE500', fontSize: '12px', fontWeight: '700', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', whiteSpace: 'nowrap' as const, marginLeft: '24px', fontFamily: 'var(--font-inter), sans-serif' }}>
+            <button onClick={() => setModalOpen(true)} style={{ background: 'transparent', border: '0.5px solid rgba(255,229,0,0.3)', color: '#FFE500', fontSize: '12px', fontWeight: '700', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', whiteSpace: 'nowrap' as const, fontFamily: 'var(--font-inter), sans-serif' }}>
               Join the waitlist
             </button>
           </div>
