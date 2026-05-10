@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 
-export default function Navbar() {
+export default function Navbar({ onJoinWaitlist }: { onJoinWaitlist?: () => void }) {
   return (
     <nav style={{
       display: 'flex',
@@ -27,15 +27,19 @@ export default function Navbar() {
         <Link href="/marketplace" className="nav-link" style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px' }}>Marketplace</Link>
         <Link href="/creators" className="nav-link" style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px' }}>Creators</Link>
         <Link href="/tools" className="nav-link" style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px' }}>Tools</Link>
-        <button className="btn-primary" style={{
-          background: '#FFE500',
-          color: '#000',
-          fontSize: '12px',
-          fontWeight: '700',
-          padding: '8px 18px',
-          borderRadius: '6px',
-          border: 'none',
-        }}>
+        <button
+          onClick={onJoinWaitlist}
+          className="btn-primary"
+          style={{
+            background: '#FFE500',
+            color: '#000',
+            fontSize: '12px',
+            fontWeight: '700',
+            padding: '8px 18px',
+            borderRadius: '6px',
+            border: 'none',
+            cursor: 'pointer',
+          }}>
           Join waitlist
         </button>
       </div>

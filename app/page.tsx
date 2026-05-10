@@ -5,7 +5,7 @@ import Image from 'next/image'
 import Navbar from './components/Navbar'
 import ScrollObserver from './components/ScrollObserver'
 
-function WaitlistForm() {
+function WaitlistModal({ onClose }: { onClose: () => void }) {
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [message, setMessage] = useState('')
@@ -33,34 +33,63 @@ function WaitlistForm() {
     }
   }
 
-  if (status === 'success') {
-    return (
-      <div style={{ background: '#000', borderRadius: '10px', padding: '12px 24px', whiteSpace: 'nowrap' as const }}>
-        <span style={{ color: '#FFE500', fontWeight: '700', fontSize: '14px' }}>👑 {message}</span>
-      </div>
-    )
-  }
-
   return (
-    <div style={{ display: 'flex', gap: '8px', flexShrink: 0, position: 'relative' }}>
-      <input
-        type="email"
-        placeholder="your@email.com"
-        value={email}
-        onChange={e => setEmail(e.target.value)}
-        onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-        style={{ background: 'rgba(0,0,0,0.15)', border: 'none', borderRadius: '8px', padding: '12px 16px', fontSize: '14px', color: '#000', outline: 'none', width: '220px', fontFamily: 'var(--font-inter), sans-serif' }}
-      />
-      <button
-        onClick={handleSubmit}
-        disabled={status === 'loading'}
-        style={{ background: '#000', color: '#FFE500', fontSize: '14px', fontWeight: '700', padding: '12px 20px', borderRadius: '8px', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' as const, fontFamily: 'var(--font-inter), sans-serif' }}
+    <div
+      onClick={onClose}
+      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{ background: '#111827', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '40px', width: '100%', maxWidth: '440px', margin: '0 20px', position: 'relative' }}
       >
-        {status === 'loading' ? '...' : 'Join the waitlist'}
-      </button>
-      {status === 'error' && (
-        <div style={{ position: 'absolute', bottom: '-24px', left: 0, color: 'rgba(0,0,0,0.6)', fontSize: '12px' }}>{message}</div>
-      )}
+        <button
+          onClick={onClose}
+          style={{ position: 'absolute', top: '16px', right: '16px', background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.4)', fontSize: '20px', cursor: 'pointer', lineHeight: 1 }}
+        >
+          ✕
+        </button>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,229,0,0.1)', border: '0.5px solid rgba(255,229,0,0.25)', padding: '5px 12px', borderRadius: '20px', marginBottom: '24px', width: 'fit-content' }}>
+          <div style={{ width: '5px', height: '5px', background: '#FFE500', borderRadius: '50%' }}></div>
+          <span className="gradient-text" style={{ fontSize: '11px', fontWeight: '600' }}>Now in beta</span>
+        </div>
+
+        <h2 style={{ color: '#fff', fontSize: '28px', fontWeight: '700', letterSpacing: '-0.02em', margin: '0 0 8px' }}>
+          Your work belongs here.
+        </h2>
+        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '14px', lineHeight: '1.6', margin: '0 0 28px' }}>
+          Join the waitlist and get early access when we launch.
+        </p>
+
+        {status === 'success' ? (
+          <div style={{ background: 'rgba(255,229,0,0.1)', border: '0.5px solid rgba(255,229,0,0.3)', borderRadius: '12px', padding: '20px', textAlign: 'center' }}>
+            <div style={{ fontSize: '24px', marginBottom: '8px' }}>👑</div>
+            <div style={{ color: '#FFE500', fontWeight: '700', fontSize: '16px' }}>{message}</div>
+            <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', marginTop: '4px' }}>We'll be in touch soon.</div>
+          </div>
+        ) : (
+          <>
+            <input
+              type="email"
+              placeholder="your@email.com"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+              style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.12)', borderRadius: '10px', padding: '14px 16px', fontSize: '14px', color: '#fff', outline: 'none', marginBottom: '12px', boxSizing: 'border-box' as const, fontFamily: 'var(--font-inter), sans-serif' }}
+            />
+            {status === 'error' && (
+              <div style={{ color: 'rgba(255,100,100,0.8)', fontSize: '12px', marginBottom: '10px' }}>{message}</div>
+            )}
+            <button
+              onClick={handleSubmit}
+              disabled={status === 'loading'}
+              style={{ width: '100%', background: '#FFE500', color: '#000', fontSize: '14px', fontWeight: '700', padding: '14px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter), sans-serif' }}
+            >
+              {status === 'loading' ? '...' : 'Join the waitlist'}
+            </button>
+          </>
+        )}
+      </div>
     </div>
   )
 }
@@ -68,6 +97,7 @@ function WaitlistForm() {
 export default function Home() {
   const bgRef = useRef<SVGSVGElement>(null)
   const ctaRef = useRef<HTMLDivElement>(null)
+  const [modalOpen, setModalOpen] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -79,10 +109,6 @@ export default function Home() {
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
-
-  const scrollToCTA = () => {
-    ctaRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
 
   const marqueeItems = [
     'LUTs', 'Shot List Creator', 'Invoice Generator',
@@ -154,6 +180,8 @@ export default function Home() {
   return (
     <main style={{ minHeight: '100vh', fontFamily: 'var(--font-inter), sans-serif', position: 'relative' }}>
 
+      {modalOpen && <WaitlistModal onClose={() => setModalOpen(false)} />}
+
       <style>{`
         @keyframes pulse-node { 0%,100%{opacity:.5} 50%{opacity:1} }
         @keyframes pulse-node-sm { 0%,100%{opacity:.2} 50%{opacity:.6} }
@@ -216,8 +244,7 @@ export default function Home() {
 
       <div style={{ position: 'relative', zIndex: 1 }}>
         <ScrollObserver />
-        <Navbar />
-
+        <Navbar onJoinWaitlist={() => setModalOpen(true)} />
         {/* Hero */}
         <section style={{ padding: '90px 40px 60px', maxWidth: '680px', margin: '0 auto', textAlign: 'center' }}>
           <div className="hero-animate-0" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255,229,0,0.1)', border: '0.5px solid rgba(255,229,0,0.25)', padding: '5px 12px', borderRadius: '20px', marginBottom: '28px' }}>
@@ -231,7 +258,7 @@ export default function Home() {
             Built by creators, for creators. From tools to assets, we've got you covered.
           </p>
           <div className="hero-animate-3" style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-            <button onClick={scrollToCTA} className="btn-primary" style={{ background: '#FFE500', color: '#000', fontSize: '14px', fontWeight: '700', padding: '13px 26px', borderRadius: '8px', border: 'none' }}>
+            <button onClick={() => setModalOpen(true)} className="btn-primary" style={{ background: '#FFE500', color: '#000', fontSize: '14px', fontWeight: '700', padding: '13px 26px', borderRadius: '8px', border: 'none', cursor: 'pointer' }}>
               Join the waitlist
             </button>
             <a href="/tools" className="btn-ghost" style={{ background: 'transparent', color: 'rgba(255,255,255,0.5)', fontSize: '14px', fontWeight: '500', padding: '13px 26px', borderRadius: '8px', border: '0.5px solid rgba(255,255,255,0.15)', textDecoration: 'none' }}>
@@ -293,7 +320,9 @@ export default function Home() {
             <h3 style={{ color: '#000', fontSize: '26px', fontWeight: '700', letterSpacing: '-0.02em', margin: '0 0 6px' }}>Your work belongs here.</h3>
             <p style={{ color: 'rgba(0,0,0,0.55)', fontSize: '14px', margin: 0 }}>Join the waitlist and get early access when we launch.</p>
           </div>
-          <WaitlistForm />
+          <button onClick={() => setModalOpen(true)} className="btn-primary" style={{ background: '#000', color: '#FFE500', fontSize: '14px', fontWeight: '700', padding: '13px 26px', borderRadius: '8px', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' as const, fontFamily: 'var(--font-inter), sans-serif' }}>
+            Join the waitlist
+          </button>
         </div>
 
         {/* Nodes & Crowns */}
@@ -449,19 +478,21 @@ export default function Home() {
                     </div>
                   ))}
                 </div>
-                <button style={{
-                  width: '100%',
-                  padding: '12px',
-                  borderRadius: '10px',
-                  border: 'none',
-                  background: pkg.featured ? '#FFE500' : 'rgba(255,255,255,0.06)',
-                  color: pkg.featured ? '#000' : 'rgba(255,255,255,0.6)',
-                  fontSize: '13px',
-                  fontWeight: '700',
-                  cursor: 'pointer',
-                  fontFamily: 'var(--font-inter), sans-serif',
-                }}>
-                  Get {pkg.crowns.toLocaleString()} Crowns
+                <button
+                  onClick={() => setModalOpen(true)}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    borderRadius: '10px',
+                    border: 'none',
+                    background: pkg.featured ? '#FFE500' : 'rgba(255,255,255,0.06)',
+                    color: pkg.featured ? '#000' : 'rgba(255,255,255,0.6)',
+                    fontSize: '13px',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    fontFamily: 'var(--font-inter), sans-serif',
+                  }}>
+                  Join the waitlist
                 </button>
               </div>
             ))}
@@ -472,8 +503,8 @@ export default function Home() {
               <div style={{ color: '#fff', fontSize: '14px', fontWeight: '700', marginBottom: '4px' }}>Don't want to spend? You don't have to.</div>
               <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px' }}>Upload a verified LUT and earn 50 Crowns. Get downloads, earn more. The network that rewards contributors.</div>
             </div>
-            <button onClick={scrollToCTA} style={{ background: 'transparent', border: '0.5px solid rgba(255,229,0,0.3)', color: '#FFE500', fontSize: '12px', fontWeight: '700', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', whiteSpace: 'nowrap' as const, marginLeft: '24px', fontFamily: 'var(--font-inter), sans-serif' }}>
-              See more
+            <button onClick={() => setModalOpen(true)} style={{ background: 'transparent', border: '0.5px solid rgba(255,229,0,0.3)', color: '#FFE500', fontSize: '12px', fontWeight: '700', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', whiteSpace: 'nowrap' as const, marginLeft: '24px', fontFamily: 'var(--font-inter), sans-serif' }}>
+              Join the waitlist
             </button>
           </div>
         </section>
