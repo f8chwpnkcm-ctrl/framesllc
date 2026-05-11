@@ -22,11 +22,12 @@ export default function ProfilePage() {
 
   useEffect(() => {
     const load = async () => {
-      const meRes = await fetch('/api/auth/me')
+      const [meRes, profileRes] = await Promise.all([
+        fetch('/api/auth/me'),
+        fetch(`/api/users/${username}`)
+      ])
       const meData = await meRes.json()
       setCurrentUser(meData.user)
-
-      const profileRes = await fetch(`/api/users/${username}`)
       if (profileRes.ok) {
         const profileData = await profileRes.json()
         setUser(profileData.user)
@@ -41,24 +42,20 @@ export default function ProfilePage() {
     router.push('/')
   }
 
-  if (loading) {
-    return (
-      <main style={{ minHeight: '100vh', background: 'linear-gradient(to bottom, #0a0a0a, #111827)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-inter), sans-serif' }}>
-        <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '14px' }}>Loading...</div>
-      </main>
-    )
-  }
+  if (loading) return (
+    <main style={{ minHeight: '100vh', background: 'linear-gradient(to bottom, #0a0a0a, #111827)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-inter), sans-serif' }}>
+      <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '14px' }}>Loading...</div>
+    </main>
+  )
 
-  if (!user) {
-    return (
-      <main style={{ minHeight: '100vh', background: 'linear-gradient(to bottom, #0a0a0a, #111827)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-inter), sans-serif' }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ color: '#fff', fontSize: '24px', fontWeight: '700', marginBottom: '8px' }}>Profile not found</div>
-          <a href="/" style={{ color: '#FFE500', fontSize: '14px' }}>Go home</a>
-        </div>
-      </main>
-    )
-  }
+  if (!user) return (
+    <main style={{ minHeight: '100vh', background: 'linear-gradient(to bottom, #0a0a0a, #111827)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-inter), sans-serif' }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ color: '#fff', fontSize: '24px', fontWeight: '700', marginBottom: '8px' }}>Profile not found</div>
+        <a href="/" style={{ color: '#FFE500', fontSize: '14px' }}>Go home</a>
+      </div>
+    </main>
+  )
 
   const isOwner = currentUser?.username === username
   const accent = themeColors[user.theme_color] || '#FFE500'
@@ -73,8 +70,13 @@ export default function ProfilePage() {
           <span style={{ background: 'linear-gradient(90deg, #FFE500, #FFC200)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontSize: '15px', fontWeight: '700', letterSpacing: '-0.02em' }}>Nodable.</span>
         </a>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <a href="/marketplace" style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', textDecoration: 'none' }}>Marketplace</a>
+          <a href="/tools" style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', textDecoration: 'none' }}>Tools</a>
           {isOwner && (
-            <button onClick={handleLogout} style={{ color: 'rgba(255,255,255,0.3)', fontSize: '13px', background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter), sans-serif' }}>Log out</button>
+            <>
+              <a href={`/u/${username}/edit`} style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', textDecoration: 'none', padding: '8px 16px', border: '0.5px solid rgba(255,255,255,0.12)', borderRadius: '8px' }}>Edit profile</a>
+              <button onClick={handleLogout} style={{ color: 'rgba(255,255,255,0.3)', fontSize: '13px', background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter), sans-serif' }}>Log out</button>
+            </>
           )}
           {!currentUser && (
             <a href="/login" style={{ background: accent, color: '#000', fontSize: '13px', fontWeight: '700', padding: '8px 18px', borderRadius: '8px', textDecoration: 'none' }}>Log in</a>
@@ -83,8 +85,9 @@ export default function ProfilePage() {
       </nav>
 
       <div style={{ maxWidth: '680px', margin: '0 auto', padding: '60px 24px' }}>
+        {/* Avatar + name */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '32px' }}>
-          <div style={{ width: '88px', height: '88px', borderRadius: '50%', background: `rgba(255,255,255,0.06)`, border: `2px solid ${accent}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+          <div style={{ width: '88px', height: '88px', borderRadius: '50%', background: 'rgba(255,255,255,0.06)', border: `2px solid ${accent}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
             {user.profile_picture_url ? (
               <img src={user.profile_picture_url} alt={user.username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             ) : (
@@ -92,15 +95,37 @@ export default function ProfilePage() {
             )}
           </div>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
-              <h1 style={{ color: '#fff', fontSize: '24px', fontWeight: '700', letterSpacing: '-0.02em' }}>@{user.username}</h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' as const }}>
+              <h1 style={{ color: '#fff', fontSize: '24px', fontWeight: '700', letterSpacing: '-0.02em', margin: 0 }}>
+                {user.real_name || `@${user.username}`}
+              </h1>
+              {user.is_verified && (
+                <span title="Verified" style={{ background: accent, borderRadius: '50%', width: '20px', height: '20px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                    <path d="M2 5l2 2 4-4" stroke="#000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </span>
+              )}
               {user.open_for_work && (
                 <span style={{ background: `${accent}20`, color: accent, fontSize: '11px', fontWeight: '600', padding: '3px 10px', borderRadius: '20px', border: `0.5px solid ${accent}40` }}>Open for work</span>
               )}
             </div>
-            <div style={{ display: 'flex', gap: '16px' }}>
+            {user.real_name && (
+              <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '14px', marginBottom: '6px' }}>@{user.username}</div>
+            )}
+            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' as const }}>
               {user.location && <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: '13px' }}>📍 {user.location}</span>}
               {user.camera_brand && <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: '13px' }}>📷 {user.camera_brand.charAt(0).toUpperCase() + user.camera_brand.slice(1)}</span>}
+              {user.instagram && (
+                <a href={`https://instagram.com/${user.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(255,255,255,0.35)', fontSize: '13px', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                    <rect x="2" y="2" width="20" height="20" rx="5" stroke="rgba(255,255,255,0.35)" strokeWidth="2"/>
+                    <circle cx="12" cy="12" r="4" stroke="rgba(255,255,255,0.35)" strokeWidth="2"/>
+                    <circle cx="17.5" cy="6.5" r="1" fill="rgba(255,255,255,0.35)"/>
+                  </svg>
+                  @{user.instagram.replace('@', '')}
+                </a>
+              )}
             </div>
           </div>
         </div>
@@ -109,7 +134,8 @@ export default function ProfilePage() {
           <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '15px', lineHeight: '1.7', marginBottom: '32px' }}>{user.bio}</p>
         )}
 
-        <div style={{ display: 'flex', gap: '24px', marginBottom: '40px' }}>
+        {/* Stats */}
+        <div style={{ display: 'flex', gap: '16px', marginBottom: '40px' }}>
           <div style={{ background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '20px 24px', flex: 1, textAlign: 'center' }}>
             <div style={{ color: accent, fontSize: '24px', fontWeight: '700', letterSpacing: '-0.02em' }}>{user.nodes}</div>
             <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '12px', marginTop: '2px' }}>Nodes</div>
@@ -121,7 +147,7 @@ export default function ProfilePage() {
             </div>
           )}
           <div style={{ background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '20px 24px', flex: 1, textAlign: 'center' }}>
-            <div style={{ color: accent, fontSize: '24px', fontWeight: '700', letterSpacing: '-0.02em' }}>
+            <div style={{ color: accent, fontSize: '18px', fontWeight: '700', letterSpacing: '-0.02em' }}>
               {new Date(user.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
             </div>
             <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '12px', marginTop: '2px' }}>Joined</div>
