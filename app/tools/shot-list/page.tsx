@@ -2,20 +2,26 @@
 
 import { useEffect, useState } from 'react'
 
+const STEPS = ['media', 'event', 'details', 'gear', 'duration']
+
 export default function ShotListPage() {
   const [user, setUser] = useState<any>(null)
-  const [step, setStep] = useState<'form' | 'generating' | 'result'>('form')
+  const [stepIndex, setStepIndex] = useState(0)
+  const [mode, setMode] = useState<'form' | 'generating' | 'result'>('form')
   const [savedLists, setSavedLists] = useState<any[]>([])
   const [currentList, setCurrentList] = useState<any>(null)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [form, setForm] = useState({
-    media_type: 'video',
+    media_type: '',
     event_type: '',
     custom_event: '',
     details: '',
-    gear: '',
+    camera_body: '',
+    lenses: '',
+    other_gear: '',
     duration: '',
+    custom_duration: '',
   })
 
   useEffect(() => {
@@ -31,19 +37,44 @@ export default function ShotListPage() {
 
   const update = (key: string, value: string) => setForm(f => ({ ...f, [key]: value }))
 
-  const eventTypes = ['Wedding', 'Sports', 'Concert', 'Corporate', 'Birthday', 'Graduation', 'Fashion', 'Real Estate', 'Documentary', 'Other']
+  const eventTypes = [
+    { label: 'Wedding', emoji: '💍' },
+    { label: 'Sports', emoji: '⚽' },
+    { label: 'Concert', emoji: '🎸' },
+    { label: 'Corporate', emoji: '💼' },
+    { label: 'Birthday', emoji: '🎂' },
+    { label: 'Graduation', emoji: '🎓' },
+    { label: 'Fashion', emoji: '👗' },
+    { label: 'Real Estate', emoji: '🏠' },
+    { label: 'Documentary', emoji: '🎬' },
+    { label: 'Other', emoji: '✦' },
+  ]
+
+  const durations = ['Under 1 hour', '1–2 hours', '2–4 hours', 'Half day', 'Full day', 'Multi-day']
+
+  const canAdvance = () => {
+    const step = STEPS[stepIndex]
+    if (step === 'media') return !!form.media_type
+    if (step === 'event') return !!form.event_type && (form.event_type !== 'Other' || !!form.custom_event)
+    if (step === 'details') return true
+    if (step === 'gear') return true
+    if (step === 'duration') return !!form.duration && (form.duration !== 'custom' || !!form.custom_duration)
+    return true
+  }
 
   const handleGenerate = async () => {
+    setMode('generating')
     const eventLabel = form.event_type === 'Other' ? form.custom_event : form.event_type
-    if (!eventLabel) return
-    setStep('generating')
+    const gearParts = [form.camera_body, form.lenses, form.other_gear].filter(Boolean)
+    const gearStr = gearParts.join(', ')
+    const durationStr = form.duration === 'custom' ? form.custom_duration : form.duration
 
     const prompt = `You are a professional ${form.media_type === 'photo' ? 'photographer' : 'videographer'} creating a detailed shot list.
 
 Event: ${eventLabel}
 ${form.details ? `Details: ${form.details}` : ''}
-${form.gear ? `Gear: ${form.gear}` : ''}
-${form.duration ? `Duration: ${form.duration}` : ''}
+${gearStr ? `Gear: ${gearStr}` : ''}
+${durationStr ? `Duration: ${durationStr}` : ''}
 
 Create a comprehensive, professional shot list. Return ONLY a JSON object with this exact structure:
 {
@@ -80,10 +111,10 @@ Include 4-6 categories with 3-6 shots each. Make it specific to the event type a
       const clean = text.replace(/```json|```/g, '').trim()
       const parsed = JSON.parse(clean)
       setCurrentList({ ...parsed, form })
-      setStep('result')
+      setMode('result')
       setSaved(false)
-    } catch (e) {
-      setStep('form')
+    } catch {
+      setMode('form')
       alert('Something went wrong. Try again.')
     }
   }
@@ -92,6 +123,8 @@ Include 4-6 categories with 3-6 shots each. Make it specific to the event type a
     if (!user || !currentList) return
     setSaving(true)
     const eventLabel = form.event_type === 'Other' ? form.custom_event : form.event_type
+    const durationStr = form.duration === 'custom' ? form.custom_duration : form.duration
+    const gearParts = [form.camera_body, form.lenses, form.other_gear].filter(Boolean)
     const res = await fetch('/api/shot-lists', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -100,8 +133,8 @@ Include 4-6 categories with 3-6 shots each. Make it specific to the event type a
         media_type: form.media_type,
         event_type: eventLabel,
         details: form.details,
-        gear: form.gear,
-        duration: form.duration,
+        gear: gearParts.join(', '),
+        duration: durationStr,
         content: currentList,
       })
     })
@@ -115,13 +148,11 @@ Include 4-6 categories with 3-6 shots each. Make it specific to the event type a
 
   const inputStyle = {
     width: '100%', background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.12)',
-    borderRadius: '10px', padding: '14px 16px', fontSize: '14px', color: '#fff', outline: 'none',
+    borderRadius: '10px', padding: '14px 16px', fontSize: '15px', color: '#fff', outline: 'none',
     fontFamily: 'var(--font-inter), sans-serif', boxSizing: 'border-box' as const,
   }
-  const labelStyle = {
-    color: 'rgba(255,255,255,0.5)', fontSize: '12px', fontWeight: '600' as const,
-    letterSpacing: '0.04em', textTransform: 'uppercase' as const, marginBottom: '8px', display: 'block',
-  }
+
+  const progress = ((stepIndex) / STEPS.length) * 100
 
   return (
     <main style={{ minHeight: '100vh', background: 'linear-gradient(to bottom, #0a0a0a, #111827)', fontFamily: 'var(--font-inter), sans-serif' }}>
@@ -142,72 +173,147 @@ Include 4-6 categories with 3-6 shots each. Make it specific to the event type a
         </div>
       </nav>
 
-      <div style={{ maxWidth: '760px', margin: '0 auto', padding: '60px 24px' }}>
-        <div style={{ marginBottom: '48px' }}>
-          <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '12px' }}>Nodable Tools</div>
-          <h1 style={{ color: '#fff', fontSize: '36px', fontWeight: '700', letterSpacing: '-0.03em', margin: '0 0 12px' }}>Shot List Generator</h1>
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '15px', lineHeight: '1.6', margin: 0 }}>Fill in your shoot details and get a professional shot list in seconds.</p>
-        </div>
+      <div style={{ maxWidth: '640px', margin: '0 auto', padding: '60px 24px' }}>
 
-        {step === 'form' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
-            <div>
-              <label style={labelStyle}>Media type</label>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                {['photo', 'video'].map(t => (
-                  <button key={t} onClick={() => update('media_type', t)}
-                    style={{ padding: '10px 24px', borderRadius: '8px', border: `0.5px solid ${form.media_type === t ? '#FFE500' : 'rgba(255,255,255,0.12)'}`, background: form.media_type === t ? 'rgba(255,229,0,0.1)' : 'transparent', color: form.media_type === t ? '#FFE500' : 'rgba(255,255,255,0.5)', fontSize: '14px', fontWeight: '600', cursor: 'pointer', fontFamily: 'var(--font-inter), sans-serif' }}>
-                    {t === 'photo' ? '📷 Photo' : '🎥 Video'}
-                  </button>
-                ))}
+        {mode === 'form' && (
+          <>
+            {/* Progress bar */}
+            <div style={{ marginBottom: '48px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '12px' }}>Step {stepIndex + 1} of {STEPS.length}</span>
+                <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '12px' }}>{Math.round(progress)}%</span>
+              </div>
+              <div style={{ height: '3px', background: 'rgba(255,255,255,0.08)', borderRadius: '2px' }}>
+                <div style={{ height: '100%', background: 'linear-gradient(90deg, #FFE500, #FFC200)', borderRadius: '2px', width: `${progress}%`, transition: 'width 0.3s ease' }} />
               </div>
             </div>
 
-            <div>
-              <label style={labelStyle}>Event type</label>
-              <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: '8px' }}>
-                {eventTypes.map(e => (
-                  <button key={e} onClick={() => update('event_type', e)}
-                    style={{ padding: '8px 16px', borderRadius: '8px', border: `0.5px solid ${form.event_type === e ? '#FFE500' : 'rgba(255,255,255,0.12)'}`, background: form.event_type === e ? 'rgba(255,229,0,0.1)' : 'transparent', color: form.event_type === e ? '#FFE500' : 'rgba(255,255,255,0.5)', fontSize: '13px', cursor: 'pointer', fontFamily: 'var(--font-inter), sans-serif' }}>
-                    {e}
-                  </button>
-                ))}
+            {/* Step: media type */}
+            {STEPS[stepIndex] === 'media' && (
+              <div>
+                <h2 style={{ color: '#fff', fontSize: '28px', fontWeight: '700', letterSpacing: '-0.02em', margin: '0 0 8px' }}>Are you shooting photo or video?</h2>
+                <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '15px', margin: '0 0 40px' }}>This helps tailor your shot list to the right format.</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {[{ value: 'photo', emoji: '📷', label: 'Photo', desc: 'Stills, portraits, editorial' }, { value: 'video', emoji: '🎥', label: 'Video', desc: 'Films, reels, coverage' }].map(opt => (
+                    <button key={opt.value} onClick={() => update('media_type', opt.value)}
+                      style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '20px 24px', borderRadius: '12px', border: `1.5px solid ${form.media_type === opt.value ? '#FFE500' : 'rgba(255,255,255,0.08)'}`, background: form.media_type === opt.value ? 'rgba(255,229,0,0.06)' : 'rgba(255,255,255,0.02)', cursor: 'pointer', fontFamily: 'var(--font-inter), sans-serif', textAlign: 'left' as const, width: '100%' }}>
+                      <span style={{ fontSize: '28px' }}>{opt.emoji}</span>
+                      <div>
+                        <div style={{ color: form.media_type === opt.value ? '#FFE500' : '#fff', fontSize: '16px', fontWeight: '700' }}>{opt.label}</div>
+                        <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: '13px' }}>{opt.desc}</div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
-              {form.event_type === 'Other' && (
-                <input style={{ ...inputStyle, marginTop: '12px' }} type="text" placeholder="Describe the event type..." value={form.custom_event} onChange={e => update('custom_event', e.target.value)} />
+            )}
+
+            {/* Step: event type */}
+            {STEPS[stepIndex] === 'event' && (
+              <div>
+                <h2 style={{ color: '#fff', fontSize: '28px', fontWeight: '700', letterSpacing: '-0.02em', margin: '0 0 8px' }}>What kind of event is it?</h2>
+                <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '15px', margin: '0 0 40px' }}>Pick the one that best describes your shoot.</p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  {eventTypes.map(e => (
+                    <button key={e.label} onClick={() => update('event_type', e.label)}
+                      style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 20px', borderRadius: '12px', border: `1.5px solid ${form.event_type === e.label ? '#FFE500' : 'rgba(255,255,255,0.08)'}`, background: form.event_type === e.label ? 'rgba(255,229,0,0.06)' : 'rgba(255,255,255,0.02)', cursor: 'pointer', fontFamily: 'var(--font-inter), sans-serif', textAlign: 'left' as const }}>
+                      <span style={{ fontSize: '22px' }}>{e.emoji}</span>
+                      <span style={{ color: form.event_type === e.label ? '#FFE500' : 'rgba(255,255,255,0.7)', fontSize: '14px', fontWeight: '600' }}>{e.label}</span>
+                    </button>
+                  ))}
+                </div>
+                {form.event_type === 'Other' && (
+                  <input style={{ ...inputStyle, marginTop: '16px' }} type="text" placeholder="What kind of shoot is it?" value={form.custom_event} onChange={e => update('custom_event', e.target.value)} autoFocus />
+                )}
+              </div>
+            )}
+
+            {/* Step: details */}
+            {STEPS[stepIndex] === 'details' && (
+              <div>
+                <h2 style={{ color: '#fff', fontSize: '28px', fontWeight: '700', letterSpacing: '-0.02em', margin: '0 0 8px' }}>Tell us about the shoot.</h2>
+                <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '15px', margin: '0 0 40px' }}>Include things like time of day, venue, weather, key moments, or anything specific you want captured.</p>
+                <textarea style={{ ...inputStyle, resize: 'none', height: '160px', lineHeight: '1.6' }}
+                  placeholder={`e.g. Outdoor soccer game at golden hour. Home team in yellow jerseys. Need to capture goals, saves, celebrations, and team huddles. Sideline access only.`}
+                  value={form.details} onChange={e => update('details', e.target.value)} autoFocus />
+                <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: '12px', marginTop: '8px' }}>Optional but the more detail, the better your shot list.</div>
+              </div>
+            )}
+
+            {/* Step: gear */}
+            {STEPS[stepIndex] === 'gear' && (
+              <div>
+                <h2 style={{ color: '#fff', fontSize: '28px', fontWeight: '700', letterSpacing: '-0.02em', margin: '0 0 8px' }}>What gear are you bringing?</h2>
+                <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '15px', margin: '0 0 40px' }}>This helps tailor lens recommendations and shot techniques to your setup.</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  <div>
+                    <label style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px', fontWeight: '600', letterSpacing: '0.04em', textTransform: 'uppercase' as const, marginBottom: '8px', display: 'block' }}>Camera body</label>
+                    <input style={inputStyle} type="text" placeholder="e.g. Sony A7IV, Canon R5" value={form.camera_body} onChange={e => update('camera_body', e.target.value)} />
+                  </div>
+                  <div>
+                    <label style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px', fontWeight: '600', letterSpacing: '0.04em', textTransform: 'uppercase' as const, marginBottom: '8px', display: 'block' }}>Lenses</label>
+                    <input style={inputStyle} type="text" placeholder="e.g. 24mm f/1.4, 70-200mm f/2.8" value={form.lenses} onChange={e => update('lenses', e.target.value)} />
+                  </div>
+                  <div>
+                    <label style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px', fontWeight: '600', letterSpacing: '0.04em', textTransform: 'uppercase' as const, marginBottom: '8px', display: 'block' }}>Other gear</label>
+                    <input style={inputStyle} type="text" placeholder="e.g. Gimbal, drone, flash, ND filters" value={form.other_gear} onChange={e => update('other_gear', e.target.value)} />
+                  </div>
+                </div>
+                <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: '12px', marginTop: '12px' }}>All optional — skip if you're not sure yet.</div>
+              </div>
+            )}
+
+            {/* Step: duration */}
+            {STEPS[stepIndex] === 'duration' && (
+              <div>
+                <h2 style={{ color: '#fff', fontSize: '28px', fontWeight: '700', letterSpacing: '-0.02em', margin: '0 0 8px' }}>How long is the shoot?</h2>
+                <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '15px', margin: '0 0 40px' }}>This helps pace your shot list and prioritize what matters most.</p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
+                  {durations.map(d => (
+                    <button key={d} onClick={() => update('duration', d)}
+                      style={{ padding: '16px 20px', borderRadius: '12px', border: `1.5px solid ${form.duration === d ? '#FFE500' : 'rgba(255,255,255,0.08)'}`, background: form.duration === d ? 'rgba(255,229,0,0.06)' : 'rgba(255,255,255,0.02)', color: form.duration === d ? '#FFE500' : 'rgba(255,255,255,0.7)', fontSize: '14px', fontWeight: '600', cursor: 'pointer', fontFamily: 'var(--font-inter), sans-serif' }}>
+                      {d}
+                    </button>
+                  ))}
+                  <button onClick={() => update('duration', 'custom')}
+                    style={{ padding: '16px 20px', borderRadius: '12px', border: `1.5px solid ${form.duration === 'custom' ? '#FFE500' : 'rgba(255,255,255,0.08)'}`, background: form.duration === 'custom' ? 'rgba(255,229,0,0.06)' : 'rgba(255,255,255,0.02)', color: form.duration === 'custom' ? '#FFE500' : 'rgba(255,255,255,0.7)', fontSize: '14px', fontWeight: '600', cursor: 'pointer', fontFamily: 'var(--font-inter), sans-serif' }}>
+                    Custom
+                  </button>
+                </div>
+                {form.duration === 'custom' && (
+                  <input style={inputStyle} type="text" placeholder="e.g. 5 hours, 3 days" value={form.custom_duration} onChange={e => update('custom_duration', e.target.value)} autoFocus />
+                )}
+              </div>
+            )}
+
+            {/* Navigation buttons */}
+            <div style={{ display: 'flex', gap: '12px', marginTop: '40px' }}>
+              {stepIndex > 0 && (
+                <button onClick={() => setStepIndex(i => i - 1)}
+                  style={{ padding: '14px 24px', borderRadius: '10px', border: '0.5px solid rgba(255,255,255,0.12)', background: 'transparent', color: 'rgba(255,255,255,0.5)', fontSize: '14px', cursor: 'pointer', fontFamily: 'var(--font-inter), sans-serif' }}>
+                  ← Back
+                </button>
+              )}
+              {stepIndex < STEPS.length - 1 ? (
+                <button onClick={() => setStepIndex(i => i + 1)} disabled={!canAdvance()}
+                  style={{ flex: 1, padding: '14px', borderRadius: '10px', border: 'none', background: canAdvance() ? '#FFE500' : 'rgba(255,255,255,0.08)', color: canAdvance() ? '#000' : 'rgba(255,255,255,0.3)', fontSize: '15px', fontWeight: '700', cursor: canAdvance() ? 'pointer' : 'default', fontFamily: 'var(--font-inter), sans-serif' }}>
+                  Continue →
+                </button>
+              ) : (
+                <button onClick={handleGenerate} disabled={!canAdvance()}
+                  style={{ flex: 1, padding: '14px', borderRadius: '10px', border: 'none', background: canAdvance() ? '#FFE500' : 'rgba(255,255,255,0.08)', color: canAdvance() ? '#000' : 'rgba(255,255,255,0.3)', fontSize: '15px', fontWeight: '700', cursor: canAdvance() ? 'pointer' : 'default', fontFamily: 'var(--font-inter), sans-serif' }}>
+                  Generate shot list ✦
+                </button>
               )}
             </div>
 
-            <div>
-              <label style={labelStyle}>Specific details</label>
-              <textarea style={{ ...inputStyle, resize: 'none', height: '100px' }}
-                placeholder="e.g. Outdoor soccer game at sunset, need to capture goals, celebrations, team huddles."
-                value={form.details} onChange={e => update('details', e.target.value)} />
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              <div>
-                <label style={labelStyle}>Gear</label>
-                <input style={inputStyle} type="text" placeholder="Sony A7IV, 70-200mm" value={form.gear} onChange={e => update('gear', e.target.value)} />
-              </div>
-              <div>
-                <label style={labelStyle}>Duration</label>
-                <input style={inputStyle} type="text" placeholder="3 hours, full day" value={form.duration} onChange={e => update('duration', e.target.value)} />
-              </div>
-            </div>
-
-            <button onClick={handleGenerate}
-              disabled={!form.event_type || (form.event_type === 'Other' && !form.custom_event)}
-              style={{ width: '100%', background: '#FFE500', color: '#000', fontSize: '15px', fontWeight: '700', padding: '16px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter), sans-serif', opacity: !form.event_type ? 0.5 : 1 }}>
-              Generate shot list ✦
-            </button>
-
-            {user && savedLists.length > 0 && (
-              <div style={{ marginTop: '40px', paddingTop: '40px', borderTop: '0.5px solid rgba(255,255,255,0.08)' }}>
+            {/* Saved lists */}
+            {user && savedLists.length > 0 && stepIndex === 0 && (
+              <div style={{ marginTop: '64px', paddingTop: '48px', borderTop: '0.5px solid rgba(255,255,255,0.08)' }}>
                 <h2 style={{ color: '#fff', fontSize: '18px', fontWeight: '700', margin: '0 0 20px' }}>Your saved shot lists</h2>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {savedLists.map((list: any) => (
-                    <div key={list.id} onClick={() => { setCurrentList(list.content); setForm({ media_type: list.media_type, event_type: list.event_type, custom_event: '', details: list.details || '', gear: list.gear || '', duration: list.duration || '' }); setStep('result'); setSaved(true) }}
+                    <div key={list.id} onClick={() => { setCurrentList(list.content); setForm(f => ({ ...f, media_type: list.media_type, event_type: list.event_type, details: list.details || '', duration: list.duration || '' })); setMode('result'); setSaved(true) }}
                       style={{ background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
                       <div>
                         <div style={{ color: '#fff', fontSize: '14px', fontWeight: '700', marginBottom: '4px' }}>{list.title}</div>
@@ -219,31 +325,31 @@ Include 4-6 categories with 3-6 shots each. Make it specific to the event type a
                 </div>
               </div>
             )}
-          </div>
+          </>
         )}
 
-        {step === 'generating' && (
+        {mode === 'generating' && (
           <div style={{ textAlign: 'center', padding: '80px 0' }}>
             <div style={{ width: '48px', height: '48px', border: '3px solid rgba(255,229,0,0.2)', borderTop: '3px solid #FFE500', borderRadius: '50%', margin: '0 auto 24px', animation: 'spin 1s linear infinite' }} />
-            <div style={{ color: '#fff', fontSize: '18px', fontWeight: '700', marginBottom: '8px' }}>Building your shot list...</div>
+            <div style={{ color: '#fff', fontSize: '20px', fontWeight: '700', marginBottom: '8px' }}>Building your shot list...</div>
             <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '14px' }}>This takes a few seconds</div>
             <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
           </div>
         )}
 
-        {step === 'result' && currentList && (
+        {mode === 'result' && currentList && (
           <div>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '40px', gap: '16px', flexWrap: 'wrap' as const }}>
               <div>
-                <h2 style={{ color: '#fff', fontSize: '26px', fontWeight: '700', letterSpacing: '-0.02em', margin: '0 0 8px' }}>{currentList.title}</h2>
+                <h2 style={{ color: '#fff', fontSize: '26px', fontWeight: '700', letterSpacing: '-0.02em', margin: '0 0 10px' }}>{currentList.title}</h2>
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' as const }}>
                   <span style={{ background: 'rgba(255,229,0,0.1)', color: '#FFE500', fontSize: '11px', fontWeight: '600', padding: '3px 10px', borderRadius: '20px', border: '0.5px solid rgba(255,229,0,0.25)', textTransform: 'capitalize' as const }}>{form.media_type}</span>
                   <span style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)', fontSize: '11px', padding: '3px 10px', borderRadius: '20px' }}>{form.event_type === 'Other' ? form.custom_event : form.event_type}</span>
-                  {form.duration && <span style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)', fontSize: '11px', padding: '3px 10px', borderRadius: '20px' }}>{form.duration}</span>}
+                  {form.duration && form.duration !== 'custom' && <span style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)', fontSize: '11px', padding: '3px 10px', borderRadius: '20px' }}>{form.duration}</span>}
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button onClick={() => { setStep('form'); setSaved(false) }}
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' as const }}>
+                <button onClick={() => { setMode('form'); setStepIndex(0); setSaved(false) }}
                   style={{ padding: '10px 18px', borderRadius: '8px', border: '0.5px solid rgba(255,255,255,0.12)', background: 'transparent', color: 'rgba(255,255,255,0.5)', fontSize: '13px', cursor: 'pointer', fontFamily: 'var(--font-inter), sans-serif' }}>
                   New list
                 </button>
@@ -261,7 +367,7 @@ Include 4-6 categories with 3-6 shots each. Make it specific to the event type a
             {currentList.categories?.map((cat: any, ci: number) => (
               <div key={ci} style={{ marginBottom: '40px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                  <div style={{ width: '28px', height: '28px', background: 'rgba(255,229,0,0.1)', border: '0.5px solid rgba(255,229,0,0.25)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: '28px', height: '28px', background: 'rgba(255,229,0,0.1)', border: '0.5px solid rgba(255,229,0,0.25)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <span style={{ color: '#FFE500', fontSize: '12px', fontWeight: '700' }}>{ci + 1}</span>
                   </div>
                   <h3 style={{ color: '#fff', fontSize: '16px', fontWeight: '700', margin: 0 }}>{cat.name}</h3>
@@ -276,7 +382,7 @@ Include 4-6 categories with 3-6 shots each. Make it specific to the event type a
                       <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: '13px', lineHeight: '1.6', marginBottom: shot.tip ? '10px' : 0 }}>{shot.description}</div>
                       {shot.tip && (
                         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                          <span style={{ color: '#FFE500', fontSize: '11px', marginTop: '1px' }}>✦</span>
+                          <span style={{ color: '#FFE500', fontSize: '11px', marginTop: '1px', flexShrink: 0 }}>✦</span>
                           <div style={{ color: 'rgba(255,229,0,0.7)', fontSize: '12px', lineHeight: '1.5' }}>{shot.tip}</div>
                         </div>
                       )}
