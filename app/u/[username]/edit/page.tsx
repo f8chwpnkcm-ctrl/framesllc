@@ -1,14 +1,24 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
 export default function EditProfilePage() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const [userId, setUserId] = useState<number | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [form, setForm] = useState({
     real_name: '',
     bio: '',
@@ -23,6 +33,8 @@ export default function EditProfilePage() {
   useEffect(() => {
     fetch('/api/auth/me').then(r => r.json()).then(d => {
       if (!d.user) { router.push('/login'); return }
+      setUserId(d.user.id)
+      setAvatarUrl(d.user.profile_picture_url || null)
       setForm({
         real_name: d.user.real_name || '',
         bio: d.user.bio || '',
@@ -36,6 +48,27 @@ export default function EditProfilePage() {
       setLoading(false)
     })
   }, [])
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !userId) return
+    if (file.size > 5 * 1024 * 1024) { setError('Image must be under 5MB'); return }
+    setUploading(true)
+    setError('')
+    const ext = file.name.split('.').pop()
+    const path = `${userId}/avatar.${ext}`
+    const { error: uploadError } = await supabase.storage.from('avatars').upload(path, file, { upsert: true })
+    if (uploadError) { setError(uploadError.message); setUploading(false); return }
+    const { data } = supabase.storage.from('avatars').getPublicUrl(path)
+    const url = `${data.publicUrl}?t=${Date.now()}`
+    await fetch('/api/auth/profile', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ profile_picture_url: url }),
+    })
+    setAvatarUrl(url)
+    setUploading(false)
+  }
 
   const update = (key: string, value: any) => setForm(f => ({ ...f, [key]: value }))
 
@@ -106,6 +139,27 @@ export default function EditProfilePage() {
         <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '14px', margin: '0 0 40px' }}>Update your public profile information.</p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div>
+            <label style={labelStyle}>Profile picture</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+              <div style={{ width: '72px', height: '72px', borderRadius: '50%', background: 'rgba(255,255,255,0.06)', border: '2px solid rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '24px', fontWeight: '700' }}>?</span>
+                )}
+              </div>
+              <div>
+                <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarUpload} style={{ display: 'none' }} />
+                <button onClick={() => fileInputRef.current?.click()} disabled={uploading}
+                  style={{ background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 18px', color: 'rgba(255,255,255,0.6)', fontSize: '13px', cursor: 'pointer', fontFamily: 'var(--font-inter), sans-serif' }}>
+                  {uploading ? 'Uploading...' : 'Upload photo'}
+                </button>
+                <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: '11px', marginTop: '6px' }}>JPG, PNG or WebP. Max 5MB.</div>
+              </div>
+            </div>
+          </div>
+
           <div>
             <label style={labelStyle}>Real name</label>
             <input style={inputStyle} type="text" placeholder="Matthew Ory" value={form.real_name} onChange={e => update('real_name', e.target.value)} />
