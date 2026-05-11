@@ -18,12 +18,12 @@ Create a comprehensive, professional shot list. Return ONLY a JSON object with t
   "title": "Shot List title based on event",
   "categories": [
     {
-      "name": "Category name (e.g. Opening & Establishing)",
+      "name": "Category name",
       "shots": [
         {
           "name": "Shot name",
           "description": "What to capture and why",
-          "tip": "Technical tip (angle, lens, settings)",
+          "tip": "Technical tip",
           "timing": "When to capture this"
         }
       ]
@@ -31,31 +31,36 @@ Create a comprehensive, professional shot list. Return ONLY a JSON object with t
   ]
 }
 
-Include 4-6 categories with 3-6 shots each. Make it specific to the event type and details provided. Return only valid JSON, no markdown, no explanation.`
-
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': process.env.ANTHROPIC_API_KEY!,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: 'claude-opus-4-6',
-      max_tokens: 2000,
-      messages: [{ role: 'user', content: prompt }]
-    })
-  })
-
-  const data = await res.json()
-  console.log('Anthropic response:', JSON.stringify(data))
-  const text = data.content?.[0]?.text || ''
-  const clean = text.replace(/```json|```/g, '').trim()
+Include 4-6 categories with 3-6 shots each. Return only valid JSON, no markdown, no explanation.`
 
   try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.ANTHROPIC_API_KEY!,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 2000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    })
+
+    const data = await res.json()
+    console.log('Status:', res.status, 'Content:', JSON.stringify(data).slice(0, 500))
+    
+    if (!res.ok) {
+      return NextResponse.json({ error: data.error?.message || 'API error' }, { status: 500 })
+    }
+
+    const text = data.content?.[0]?.text || ''
+    const clean = text.replace(/```json|```/g, '').trim()
     const parsed = JSON.parse(clean)
     return NextResponse.json({ result: parsed })
-  } catch {
-    return NextResponse.json({ error: 'Failed to parse response', raw: text }, { status: 500 })
+  } catch (e: any) {
+    console.error('Error:', e.message)
+    return NextResponse.json({ error: e.message }, { status: 500 })
   }
 }
