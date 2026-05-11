@@ -62,6 +62,7 @@ export default function ProfilePage() {
 
   return (
     <main style={{ minHeight: '100vh', background: 'linear-gradient(to bottom, #0a0a0a, #111827)', fontFamily: 'var(--font-inter), sans-serif' }}>
+      {/* Nav */}
       <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 40px', borderBottom: '0.5px solid rgba(255,255,255,0.08)', position: 'sticky', top: 0, background: 'rgba(10,10,10,0.85)', backdropFilter: 'blur(12px)', zIndex: 100 }}>
         <a href="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
           <svg width="26" height="14" viewBox="0 0 4191.67 2190.15" fill="none">
@@ -73,10 +74,7 @@ export default function ProfilePage() {
           <a href="/marketplace" style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', textDecoration: 'none' }}>Marketplace</a>
           <a href="/tools" style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', textDecoration: 'none' }}>Tools</a>
           {isOwner && (
-            <>
-              <a href={`/u/${username}/edit`} style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', textDecoration: 'none', padding: '8px 16px', border: '0.5px solid rgba(255,255,255,0.12)', borderRadius: '8px' }}>Edit profile</a>
-              <button onClick={handleLogout} style={{ color: 'rgba(255,255,255,0.3)', fontSize: '13px', background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter), sans-serif' }}>Log out</button>
-            </>
+            <button onClick={handleLogout} style={{ color: 'rgba(255,255,255,0.3)', fontSize: '13px', background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter), sans-serif' }}>Log out</button>
           )}
           {!currentUser && (
             <a href="/login" style={{ background: accent, color: '#000', fontSize: '13px', fontWeight: '700', padding: '8px 18px', borderRadius: '8px', textDecoration: 'none' }}>Log in</a>
@@ -85,8 +83,8 @@ export default function ProfilePage() {
       </nav>
 
       <div style={{ maxWidth: '680px', margin: '0 auto', padding: '60px 24px' }}>
-        {/* Avatar + name */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '32px' }}>
+        {/* Avatar + info */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '24px', marginBottom: '24px' }}>
           <div style={{ width: '88px', height: '88px', borderRadius: '50%', background: 'rgba(255,255,255,0.06)', border: `2px solid ${accent}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
             {user.profile_picture_url ? (
               <img src={user.profile_picture_url} alt={user.username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -94,11 +92,9 @@ export default function ProfilePage() {
               <span style={{ color: accent, fontSize: '32px', fontWeight: '700' }}>{user.username[0].toUpperCase()}</span>
             )}
           </div>
-          <div>
+          <div style={{ flex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' as const }}>
-              <h1 style={{ color: '#fff', fontSize: '24px', fontWeight: '700', letterSpacing: '-0.02em', margin: 0 }}>
-                {user.real_name || `@${user.username}`}
-              </h1>
+              <h1 style={{ color: '#fff', fontSize: '22px', fontWeight: '700', letterSpacing: '-0.02em', margin: 0 }}>@{user.username}</h1>
               {user.is_verified && (
                 <span title="Verified" style={{ background: accent, borderRadius: '50%', width: '20px', height: '20px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
@@ -111,17 +107,18 @@ export default function ProfilePage() {
               )}
             </div>
             {user.real_name && (
-              <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '14px', marginBottom: '6px' }}>@{user.username}</div>
+              <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px', marginBottom: '8px' }}>{user.real_name}</div>
             )}
-            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' as const }}>
+            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' as const, alignItems: 'center' }}>
               {user.location && <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: '13px' }}>📍 {user.location}</span>}
               {user.camera_brand && <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: '13px' }}>📷 {user.camera_brand.charAt(0).toUpperCase() + user.camera_brand.slice(1)}</span>}
               {user.instagram && (
-                <a href={`https://instagram.com/${user.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(255,255,255,0.35)', fontSize: '13px', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <a href={`https://instagram.com/${user.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '5px 12px', textDecoration: 'none', color: 'rgba(255,255,255,0.6)', fontSize: '12px', fontWeight: '600' }}>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
-                    <rect x="2" y="2" width="20" height="20" rx="5" stroke="rgba(255,255,255,0.35)" strokeWidth="2"/>
-                    <circle cx="12" cy="12" r="4" stroke="rgba(255,255,255,0.35)" strokeWidth="2"/>
-                    <circle cx="17.5" cy="6.5" r="1" fill="rgba(255,255,255,0.35)"/>
+                    <rect x="2" y="2" width="20" height="20" rx="5" stroke="rgba(255,255,255,0.6)" strokeWidth="2"/>
+                    <circle cx="12" cy="12" r="4" stroke="rgba(255,255,255,0.6)" strokeWidth="2"/>
+                    <circle cx="17.5" cy="6.5" r="1" fill="rgba(255,255,255,0.6)"/>
                   </svg>
                   @{user.instagram.replace('@', '')}
                 </a>
@@ -129,6 +126,16 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
+
+        {/* Edit profile button — only for owner */}
+        {isOwner && (
+          <div style={{ marginBottom: '28px' }}>
+            <a href={`/u/${username}/edit`}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '9px 18px', textDecoration: 'none', color: 'rgba(255,255,255,0.5)', fontSize: '13px', fontWeight: '600' }}>
+              ✏️ Edit profile
+            </a>
+          </div>
+        )}
 
         {user.bio && (
           <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '15px', lineHeight: '1.7', marginBottom: '32px' }}>{user.bio}</p>
