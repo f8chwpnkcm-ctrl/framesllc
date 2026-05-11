@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 
 export async function GET() {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const sessionId = cookieStore.get('nodable_session')?.value
   if (!sessionId) return NextResponse.json({ user: null })
   const session = await sql`SELECT * FROM sessions WHERE id = ${sessionId} AND expires_at > NOW()`
