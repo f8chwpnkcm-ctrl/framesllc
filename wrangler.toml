@@ -1,9 +1,13 @@
 name = "nodable"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
-pages_build_output_dir = ".open-next/assets"
+pages_build_output_dir = "public"
 
 [[d1_databases]]
 binding = "DB"
 database_name = "nodable-db"
 database_id = "8dd5fbca-7fe2-4e81-b1f4-774d56af60ec"
+
+[[r2_buckets]]
+binding = "AVATARS"
+bucket_name = "nodable-avatars"
