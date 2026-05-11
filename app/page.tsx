@@ -161,7 +161,7 @@ export default function Home() {
       crowns: 1200,
       price: '$9.99',
       desc: 'The sweet spot for active creators.',
-      perks: ['1,200 Crowns', 'Unlock Verified tier LUTs or Assets', 'Send Crowns to creators', 'Never expires', 'Early access to new features', '20% bonus Crowns'],
+      perks: ['1,200 Crowns', 'Unlock Verified tier LUTs or Assets', 'Send Crowns to creators', 'Never expires', '20% bonus Crowns'],
       featured: true,
     },
     {
