@@ -41,13 +41,14 @@ Include 4-6 categories with 3-6 shots each. Make it specific to the event type a
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-opus-4-6',
       max_tokens: 2000,
       messages: [{ role: 'user', content: prompt }]
     })
   })
 
   const data = await res.json()
+  console.log('Anthropic response:', JSON.stringify(data))
   const text = data.content?.[0]?.text || ''
   const clean = text.replace(/```json|```/g, '').trim()
 
@@ -55,6 +56,6 @@ Include 4-6 categories with 3-6 shots each. Make it specific to the event type a
     const parsed = JSON.parse(clean)
     return NextResponse.json({ result: parsed })
   } catch {
-    return NextResponse.json({ error: 'Failed to parse response' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to parse response', raw: text }, { status: 500 })
   }
 }
