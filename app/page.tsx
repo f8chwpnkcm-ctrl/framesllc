@@ -51,7 +51,7 @@ function WaitlistModal({ onClose }: { onClose: () => void }) {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,229,0,0.1)', border: '0.5px solid rgba(255,229,0,0.25)', padding: '5px 12px', borderRadius: '20px', marginBottom: '24px', width: 'fit-content' }}>
           <div style={{ width: '5px', height: '5px', background: '#FFE500', borderRadius: '50%' }}></div>
-          <span className="gradient-text" style={{ fontSize: '11px', fontWeight: '600' }}>Now in beta</span>
+          <span className="gradient-text" style={{ fontSize: '11px', fontWeight: '600' }}>Now in Beta</span>
         </div>
 
         <h2 style={{ color: '#fff', fontSize: '28px', fontWeight: '700', letterSpacing: '-0.02em', margin: '0 0 8px' }}>
@@ -112,9 +112,9 @@ export default function Home() {
 
   const marqueeItems = [
     'LUTs', 'Shot List Creator', 'Invoice Generator',
-    'Built For Creators', 'Creator Verified', 'Where Standards Are Set',
-    'Verified', 'Shot List Creator', 'Invoice Generator',
-    'Built By Creatives', 'Creative Centered', 'Where Standards Are Set',
+    'Built For Creators', 'Creator Verified', 'Where The Standards Are Set',
+    'Creator Verified', 'Shot List Creator', 'Invoice Generator',
+    'Built By Creatives', 'Creative Centered', 'Where The Standards Are Set',
   ]
 
   const features = [
@@ -247,12 +247,14 @@ export default function Home() {
         <Navbar onJoinWaitlist={() => setModalOpen(true)} />
         {/* Hero */}
         <section style={{ padding: '90px 40px 60px', maxWidth: '680px', margin: '0 auto', textAlign: 'center' }}>
+        <section className="hero-section" style={{ padding: '90px 40px 60px', maxWidth: '680px', margin: '0 auto', textAlign: 'center' }}>
           <div className="hero-animate-0" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255,229,0,0.1)', border: '0.5px solid rgba(255,229,0,0.25)', padding: '5px 12px', borderRadius: '20px', marginBottom: '28px' }}>
             <div style={{ width: '5px', height: '5px', background: '#FFE500', borderRadius: '50%' }}></div>
-            <span className="gradient-text" style={{ fontSize: '11px', fontWeight: '600' }}>Now in beta</span>
+            <span className="gradient-text" style={{ fontSize: '11px', fontWeight: '600' }}>Now in Beta</span>
           </div>
           <h1 className="hero-animate-1" style={{ color: '#fff', fontSize: '56px', fontWeight: '700', letterSpacing: '-0.03em', lineHeight: '1.04', margin: '0 0 20px' }}>
             Where the<br /><span className="gradient-text">standards are set.</span>
+          <h1 className="hero-animate-1 hero-title" style={{ ... }}>
           </h1>
           <p className="hero-animate-2" style={{ color: 'rgba(255,255,255,0.45)', fontSize: '16px', lineHeight: '1.7', margin: '0 auto 36px', maxWidth: '420px' }}>
             Built by creators, for creators. From tools to assets, we've got you covered.

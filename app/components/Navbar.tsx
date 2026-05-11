@@ -4,7 +4,7 @@ import Link from 'next/link'
 
 export default function Navbar({ onJoinWaitlist }: { onJoinWaitlist?: () => void }) {
   return (
-    <nav style={{
+    <nav className="navbar-inner" style={{
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
@@ -23,7 +23,7 @@ export default function Navbar({ onJoinWaitlist }: { onJoinWaitlist?: () => void
         <span className="gradient-text" style={{ fontSize: '15px', fontWeight: '700', letterSpacing: '-0.02em' }}>Nodable.</span>
       </Link>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '28px' }}>
+      <div className="navbar-links" style={{ display: 'flex', alignItems: 'center', gap: '28px' }}>
         <Link href="/marketplace" className="nav-link" style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px' }}>Marketplace</Link>
         <Link href="/creators" className="nav-link" style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px' }}>Creators</Link>
         <Link href="/tools" className="nav-link" style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px' }}>Tools</Link>
