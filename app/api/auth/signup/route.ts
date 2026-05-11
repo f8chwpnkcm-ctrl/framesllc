@@ -1,4 +1,4 @@
-import { sql } from '@vercel/postgres'
+import { supabase } from '@/lib/supabase'
 import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
@@ -7,24 +7,33 @@ export async function POST(request: Request) {
   if (username.length < 3 || username.length > 20) return NextResponse.json({ error: 'Username must be 3-20 characters' }, { status: 400 })
   if (!/^[a-zA-Z0-9_]+$/.test(username)) return NextResponse.json({ error: 'Username can only contain letters, numbers and underscores' }, { status: 400 })
   if (password.length < 8) return NextResponse.json({ error: 'Password must be at least 8 characters' }, { status: 400 })
-  const waitlist = await sql`SELECT * FROM waitlist WHERE email = ${email}`
-  if (waitlist.rows.length === 0) return NextResponse.json({ error: 'Email not on waitlist' }, { status: 403 })
-  const existing = await sql`SELECT id FROM users WHERE username = ${username}`
-  if (existing.rows.length > 0) return NextResponse.json({ error: 'Username already taken' }, { status: 409 })
+
+  const { data: waitlist } = await supabase.from('waitlist').select('id').eq('email', email).single()
+  if (!waitlist) return NextResponse.json({ error: 'Email not on waitlist' }, { status: 403 })
+
+  const { data: existingUser } = await supabase.from('users').select('id').eq('username', username).single()
+  if (existingUser) return NextResponse.json({ error: 'Username already taken' }, { status: 409 })
+
   const encoder = new TextEncoder()
   const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(password))
   const password_hash = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('')
-  try {
-    await sql`INSERT INTO users (email, username, password_hash, bio, camera_brand, age, location, open_for_work, theme_color) VALUES (${email}, ${username}, ${password_hash}, ${bio || null}, ${camera_brand || null}, ${age || null}, ${location || null}, ${open_for_work || false}, ${theme_color || 'yellow'})`
-    const user = await sql`SELECT * FROM users WHERE username = ${username}`
-    const sessionId = crypto.randomUUID()
-    const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-    await sql`INSERT INTO sessions (id, user_id, expires_at) VALUES (${sessionId}, ${user.rows[0].id}, ${expires})`
-    const response = NextResponse.json({ success: true, username })
-    response.cookies.set('nodable_session', sessionId, { httpOnly: true, secure: true, sameSite: 'lax', maxAge: 30 * 24 * 60 * 60, path: '/' })
-    return response
-  } catch (e: any) {
-    if (e.message?.includes('unique') || e.message?.includes('duplicate')) return NextResponse.json({ error: 'Email already has an account' }, { status: 409 })
-    return NextResponse.json({ error: e.message }, { status: 500 })
+
+  const { data: user, error } = await supabase.from('users').insert({
+    email, username, password_hash, bio: bio || null, camera_brand: camera_brand || null,
+    age: age || null, location: location || null, open_for_work: open_for_work || false,
+    theme_color: theme_color || 'yellow'
+  }).select().single()
+
+  if (error) {
+    if (error.code === '23505') return NextResponse.json({ error: 'Email already has an account' }, { status: 409 })
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
+
+  const sessionId = crypto.randomUUID()
+  const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+  await supabase.from('sessions').insert({ id: sessionId, user_id: user.id, expires_at: expires })
+
+  const response = NextResponse.json({ success: true, username })
+  response.cookies.set('nodable_session', sessionId, { httpOnly: true, secure: true, sameSite: 'lax', maxAge: 30 * 24 * 60 * 60, path: '/' })
+  return response
 }
