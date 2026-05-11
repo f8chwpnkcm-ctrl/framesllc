@@ -1,10 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 
 export default function ShotListPage() {
-  const router = useRouter()
   const [user, setUser] = useState<any>(null)
   const [step, setStep] = useState<'form' | 'generating' | 'result'>('form')
   const [savedLists, setSavedLists] = useState<any[]>([])
@@ -37,7 +35,7 @@ export default function ShotListPage() {
 
   const handleGenerate = async () => {
     const eventLabel = form.event_type === 'Other' ? form.custom_event : form.event_type
-    if (!eventLabel || !form.media_type) return
+    if (!eventLabel) return
     setStep('generating')
 
     const prompt = `You are a professional ${form.media_type === 'photo' ? 'photographer' : 'videographer'} creating a detailed shot list.
@@ -86,7 +84,7 @@ Include 4-6 categories with 3-6 shots each. Make it specific to the event type a
       setSaved(false)
     } catch (e) {
       setStep('form')
-      alert('Something went wrong generating the shot list. Try again.')
+      alert('Something went wrong. Try again.')
     }
   }
 
@@ -145,8 +143,6 @@ Include 4-6 categories with 3-6 shots each. Make it specific to the event type a
       </nav>
 
       <div style={{ maxWidth: '760px', margin: '0 auto', padding: '60px 24px' }}>
-
-        {/* Header */}
         <div style={{ marginBottom: '48px' }}>
           <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '12px' }}>Nodable Tools</div>
           <h1 style={{ color: '#fff', fontSize: '36px', fontWeight: '700', letterSpacing: '-0.03em', margin: '0 0 12px' }}>Shot List Generator</h1>
@@ -155,21 +151,18 @@ Include 4-6 categories with 3-6 shots each. Make it specific to the event type a
 
         {step === 'form' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
-
-            {/* Photo / Video toggle */}
             <div>
               <label style={labelStyle}>Media type</label>
               <div style={{ display: 'flex', gap: '8px' }}>
                 {['photo', 'video'].map(t => (
                   <button key={t} onClick={() => update('media_type', t)}
-                    style={{ padding: '10px 24px', borderRadius: '8px', border: `0.5px solid ${form.media_type === t ? '#FFE500' : 'rgba(255,255,255,0.12)'}`, background: form.media_type === t ? 'rgba(255,229,0,0.1)' : 'transparent', color: form.media_type === t ? '#FFE500' : 'rgba(255,255,255,0.5)', fontSize: '14px', fontWeight: '600', cursor: 'pointer', fontFamily: 'var(--font-inter), sans-serif', textTransform: 'capitalize' }}>
+                    style={{ padding: '10px 24px', borderRadius: '8px', border: `0.5px solid ${form.media_type === t ? '#FFE500' : 'rgba(255,255,255,0.12)'}`, background: form.media_type === t ? 'rgba(255,229,0,0.1)' : 'transparent', color: form.media_type === t ? '#FFE500' : 'rgba(255,255,255,0.5)', fontSize: '14px', fontWeight: '600', cursor: 'pointer', fontFamily: 'var(--font-inter), sans-serif' }}>
                     {t === 'photo' ? '📷 Photo' : '🎥 Video'}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Event type */}
             <div>
               <label style={labelStyle}>Event type</label>
               <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: '8px' }}>
@@ -185,23 +178,21 @@ Include 4-6 categories with 3-6 shots each. Make it specific to the event type a
               )}
             </div>
 
-            {/* Details */}
             <div>
               <label style={labelStyle}>Specific details</label>
               <textarea style={{ ...inputStyle, resize: 'none', height: '100px' }}
-                placeholder="e.g. Outdoor soccer game at sunset, need to capture goals, celebrations, team huddles. Home team in yellow jerseys."
+                placeholder="e.g. Outdoor soccer game at sunset, need to capture goals, celebrations, team huddles."
                 value={form.details} onChange={e => update('details', e.target.value)} />
             </div>
 
-            {/* Gear + Duration */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               <div>
                 <label style={labelStyle}>Gear</label>
-                <input style={inputStyle} type="text" placeholder="Sony A7IV, 70-200mm, 24mm" value={form.gear} onChange={e => update('gear', e.target.value)} />
+                <input style={inputStyle} type="text" placeholder="Sony A7IV, 70-200mm" value={form.gear} onChange={e => update('gear', e.target.value)} />
               </div>
               <div>
                 <label style={labelStyle}>Duration</label>
-                <input style={inputStyle} type="text" placeholder="3 hours, full day, 90 min" value={form.duration} onChange={e => update('duration', e.target.value)} />
+                <input style={inputStyle} type="text" placeholder="3 hours, full day" value={form.duration} onChange={e => update('duration', e.target.value)} />
               </div>
             </div>
 
@@ -210,6 +201,24 @@ Include 4-6 categories with 3-6 shots each. Make it specific to the event type a
               style={{ width: '100%', background: '#FFE500', color: '#000', fontSize: '15px', fontWeight: '700', padding: '16px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter), sans-serif', opacity: !form.event_type ? 0.5 : 1 }}>
               Generate shot list ✦
             </button>
+
+            {user && savedLists.length > 0 && (
+              <div style={{ marginTop: '40px', paddingTop: '40px', borderTop: '0.5px solid rgba(255,255,255,0.08)' }}>
+                <h2 style={{ color: '#fff', fontSize: '18px', fontWeight: '700', margin: '0 0 20px' }}>Your saved shot lists</h2>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {savedLists.map((list: any) => (
+                    <div key={list.id} onClick={() => { setCurrentList(list.content); setForm({ media_type: list.media_type, event_type: list.event_type, custom_event: '', details: list.details || '', gear: list.gear || '', duration: list.duration || '' }); setStep('result'); setSaved(true) }}
+                      style={{ background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
+                      <div>
+                        <div style={{ color: '#fff', fontSize: '14px', fontWeight: '700', marginBottom: '4px' }}>{list.title}</div>
+                        <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '12px' }}>{list.media_type} · {list.event_type} · {new Date(list.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+                      </div>
+                      <span style={{ color: 'rgba(255,255,255,0.2)' }}>→</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -224,38 +233,35 @@ Include 4-6 categories with 3-6 shots each. Make it specific to the event type a
 
         {step === 'result' && currentList && (
           <div>
-            {/* Result header */}
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '40px', gap: '16px', flexWrap: 'wrap' as const }}>
               <div>
                 <h2 style={{ color: '#fff', fontSize: '26px', fontWeight: '700', letterSpacing: '-0.02em', margin: '0 0 8px' }}>{currentList.title}</h2>
-                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' as const }}>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' as const }}>
                   <span style={{ background: 'rgba(255,229,0,0.1)', color: '#FFE500', fontSize: '11px', fontWeight: '600', padding: '3px 10px', borderRadius: '20px', border: '0.5px solid rgba(255,229,0,0.25)', textTransform: 'capitalize' as const }}>{form.media_type}</span>
                   <span style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)', fontSize: '11px', padding: '3px 10px', borderRadius: '20px' }}>{form.event_type === 'Other' ? form.custom_event : form.event_type}</span>
                   {form.duration && <span style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)', fontSize: '11px', padding: '3px 10px', borderRadius: '20px' }}>{form.duration}</span>}
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: '10px', flexShrink: 0 }}>
+              <div style={{ display: 'flex', gap: '10px' }}>
                 <button onClick={() => { setStep('form'); setSaved(false) }}
                   style={{ padding: '10px 18px', borderRadius: '8px', border: '0.5px solid rgba(255,255,255,0.12)', background: 'transparent', color: 'rgba(255,255,255,0.5)', fontSize: '13px', cursor: 'pointer', fontFamily: 'var(--font-inter), sans-serif' }}>
                   New list
                 </button>
-                {user && (
+                {user ? (
                   <button onClick={handleSave} disabled={saving || saved}
-                    style={{ padding: '10px 18px', borderRadius: '8px', border: 'none', background: saved ? 'rgba(34,197,94,0.15)' : '#FFE500', color: saved ? '#22C55E' : '#000', fontSize: '13px', fontWeight: '700', cursor: saved ? 'default' : 'pointer', fontFamily: 'var(--font-inter), sans-serif', border: saved ? '0.5px solid rgba(34,197,94,0.3)' : 'none' } as any}>
+                    style={{ padding: '10px 18px', borderRadius: '8px', border: saved ? '0.5px solid rgba(34,197,94,0.3)' : 'none', background: saved ? 'rgba(34,197,94,0.15)' : '#FFE500', color: saved ? '#22C55E' : '#000', fontSize: '13px', fontWeight: '700', cursor: saved ? 'default' : 'pointer', fontFamily: 'var(--font-inter), sans-serif' }}>
                     {saving ? 'Saving...' : saved ? '✓ Saved' : 'Save to profile'}
                   </button>
-                )}
-                {!user && (
+                ) : (
                   <a href="/login" style={{ padding: '10px 18px', borderRadius: '8px', background: '#FFE500', color: '#000', fontSize: '13px', fontWeight: '700', textDecoration: 'none' }}>Log in to save</a>
                 )}
               </div>
             </div>
 
-            {/* Shot list categories */}
             {currentList.categories?.map((cat: any, ci: number) => (
               <div key={ci} style={{ marginBottom: '40px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                  <div style={{ width: '28px', height: '28px', background: 'rgba(255,229,0,0.1)', border: '0.5px solid rgba(255,229,0,0.25)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <div style={{ width: '28px', height: '28px', background: 'rgba(255,229,0,0.1)', border: '0.5px solid rgba(255,229,0,0.25)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <span style={{ color: '#FFE500', fontSize: '12px', fontWeight: '700' }}>{ci + 1}</span>
                   </div>
                   <h3 style={{ color: '#fff', fontSize: '16px', fontWeight: '700', margin: 0 }}>{cat.name}</h3>
@@ -265,14 +271,12 @@ Include 4-6 categories with 3-6 shots each. Make it specific to the event type a
                     <div key={si} style={{ background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '20px' }}>
                       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', marginBottom: '8px' }}>
                         <div style={{ color: '#fff', fontSize: '14px', fontWeight: '700' }}>{shot.name}</div>
-                        {shot.timing && (
-                          <span style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)', fontSize: '11px', padding: '3px 10px', borderRadius: '20px', whiteSpace: 'nowrap' as const, flexShrink: 0 }}>{shot.timing}</span>
-                        )}
+                        {shot.timing && <span style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)', fontSize: '11px', padding: '3px 10px', borderRadius: '20px', whiteSpace: 'nowrap' as const, flexShrink: 0 }}>{shot.timing}</span>}
                       </div>
                       <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: '13px', lineHeight: '1.6', marginBottom: shot.tip ? '10px' : 0 }}>{shot.description}</div>
                       {shot.tip && (
                         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                          <span style={{ color: '#FFE500', fontSize: '11px', marginTop: '1px', flexShrink: 0 }}>✦</span>
+                          <span style={{ color: '#FFE500', fontSize: '11px', marginTop: '1px' }}>✦</span>
                           <div style={{ color: 'rgba(255,229,0,0.7)', fontSize: '12px', lineHeight: '1.5' }}>{shot.tip}</div>
                         </div>
                       )}
@@ -281,31 +285,6 @@ Include 4-6 categories with 3-6 shots each. Make it specific to the event type a
                 </div>
               </div>
             ))}
-          </div>
-        )}
-
-        {/* Saved shot lists */}
-        {user && savedLists.length > 0 && step === 'form' && (
-          <div style={{ marginTop: '64px', paddingTop: '48px', borderTop: '0.5px solid rgba(255,255,255,0.08)' }}>
-            <h2 style={{ color: '#fff', fontSize: '20px', fontWeight: '700', letterSpacing: '-0.02em', margin: '0 0 24px' }}>Your saved shot lists</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {savedLists.map((list: any) => (
-                <div key={list.id} style={{ background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', cursor: 'pointer' }}
-                  onClick={() => { setCurrentList(list.content); setForm({ media_type: list.media_type, event_type: list.event_type, custom_event: '', details: list.details || '', gear: list.gear || '', duration: list.duration || '' }); setStep('result'); setSaved(true) }}>
-                  <div>
-                    <div style={{ color: '#fff', fontSize: '14px', fontWeight: '700', marginBottom: '4px' }}>{list.title}</div>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '12px', textTransform: 'capitalize' as const }}>{list.media_type}</span>
-                      <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '12px' }}>·</span>
-                      <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '12px' }}>{list.event_type}</span>
-                      <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '12px' }}>·</span>
-                      <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '12px' }}>{new Date(list.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                    </div>
-                  </div>
-                  <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '18px' }}>→</span>
-                </div>
-              ))}
-            </div>
           </div>
         )}
       </div>
