@@ -65,52 +65,25 @@ export default function ShotListPage() {
   const handleGenerate = async () => {
     setMode('generating')
     const eventLabel = form.event_type === 'Other' ? form.custom_event : form.event_type
-    const gearParts = [form.camera_body, form.lenses, form.other_gear].filter(Boolean)
-    const gearStr = gearParts.join(', ')
     const durationStr = form.duration === 'custom' ? form.custom_duration : form.duration
 
-    const prompt = `You are a professional ${form.media_type === 'photo' ? 'photographer' : 'videographer'} creating a detailed shot list.
-
-Event: ${eventLabel}
-${form.details ? `Details: ${form.details}` : ''}
-${gearStr ? `Gear: ${gearStr}` : ''}
-${durationStr ? `Duration: ${durationStr}` : ''}
-
-Create a comprehensive, professional shot list. Return ONLY a JSON object with this exact structure:
-{
-  "title": "Shot List title based on event",
-  "categories": [
-    {
-      "name": "Category name (e.g. Opening & Establishing)",
-      "shots": [
-        {
-          "name": "Shot name",
-          "description": "What to capture and why",
-          "tip": "Technical tip (angle, lens, settings)",
-          "timing": "When to capture this"
-        }
-      ]
-    }
-  ]
-}
-
-Include 4-6 categories with 3-6 shots each. Make it specific to the event type and details provided. Return only valid JSON, no markdown, no explanation.`
-
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
+      const res = await fetch('/api/generate-shot-list', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 2000,
-          messages: [{ role: 'user', content: prompt }]
+          media_type: form.media_type,
+          event_type: eventLabel,
+          details: form.details,
+          camera_body: form.camera_body,
+          lenses: form.lenses,
+          other_gear: form.other_gear,
+          duration: durationStr,
         })
       })
       const data = await res.json()
-      const text = data.content?.[0]?.text || ''
-      const clean = text.replace(/```json|```/g, '').trim()
-      const parsed = JSON.parse(clean)
-      setCurrentList({ ...parsed, form })
+      if (!data.result) throw new Error('No result')
+      setCurrentList({ ...data.result, form })
       setMode('result')
       setSaved(false)
     } catch {
@@ -152,7 +125,7 @@ Include 4-6 categories with 3-6 shots each. Make it specific to the event type a
     fontFamily: 'var(--font-inter), sans-serif', boxSizing: 'border-box' as const,
   }
 
-  const progress = ((stepIndex) / STEPS.length) * 100
+  const progress = (stepIndex / STEPS.length) * 100
 
   return (
     <main style={{ minHeight: '100vh', background: 'linear-gradient(to bottom, #0a0a0a, #111827)', fontFamily: 'var(--font-inter), sans-serif' }}>
@@ -177,7 +150,6 @@ Include 4-6 categories with 3-6 shots each. Make it specific to the event type a
 
         {mode === 'form' && (
           <>
-            {/* Progress bar */}
             <div style={{ marginBottom: '48px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                 <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '12px' }}>Step {stepIndex + 1} of {STEPS.length}</span>
@@ -188,7 +160,6 @@ Include 4-6 categories with 3-6 shots each. Make it specific to the event type a
               </div>
             </div>
 
-            {/* Step: media type */}
             {STEPS[stepIndex] === 'media' && (
               <div>
                 <h2 style={{ color: '#fff', fontSize: '28px', fontWeight: '700', letterSpacing: '-0.02em', margin: '0 0 8px' }}>Are you shooting photo or video?</h2>
@@ -208,7 +179,6 @@ Include 4-6 categories with 3-6 shots each. Make it specific to the event type a
               </div>
             )}
 
-            {/* Step: event type */}
             {STEPS[stepIndex] === 'event' && (
               <div>
                 <h2 style={{ color: '#fff', fontSize: '28px', fontWeight: '700', letterSpacing: '-0.02em', margin: '0 0 8px' }}>What kind of event is it?</h2>
@@ -228,19 +198,17 @@ Include 4-6 categories with 3-6 shots each. Make it specific to the event type a
               </div>
             )}
 
-            {/* Step: details */}
             {STEPS[stepIndex] === 'details' && (
               <div>
                 <h2 style={{ color: '#fff', fontSize: '28px', fontWeight: '700', letterSpacing: '-0.02em', margin: '0 0 8px' }}>Tell us about the shoot.</h2>
                 <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '15px', margin: '0 0 40px' }}>Include things like time of day, venue, weather, key moments, or anything specific you want captured.</p>
                 <textarea style={{ ...inputStyle, resize: 'none', height: '160px', lineHeight: '1.6' }}
-                  placeholder={`e.g. Outdoor soccer game at golden hour. Home team in yellow jerseys. Need to capture goals, saves, celebrations, and team huddles. Sideline access only.`}
-                  value={form.details} onChange={e => update('details', e.target.value)} autoFocus />
-                <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: '12px', marginTop: '8px' }}>Optional but the more detail, the better your shot list.</div>
+                  placeholder="e.g. Outdoor soccer game at golden hour. Home team in yellow jerseys. Need to capture goals, saves, celebrations, and team huddles. Sideline access only."
+                  value={form.details} onChange={e => update('details', e.target.value)} />
+                <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: '12px', marginTop: '8px' }}>Optional — but the more detail, the better your shot list.</div>
               </div>
             )}
 
-            {/* Step: gear */}
             {STEPS[stepIndex] === 'gear' && (
               <div>
                 <h2 style={{ color: '#fff', fontSize: '28px', fontWeight: '700', letterSpacing: '-0.02em', margin: '0 0 8px' }}>What gear are you bringing?</h2>
@@ -263,7 +231,6 @@ Include 4-6 categories with 3-6 shots each. Make it specific to the event type a
               </div>
             )}
 
-            {/* Step: duration */}
             {STEPS[stepIndex] === 'duration' && (
               <div>
                 <h2 style={{ color: '#fff', fontSize: '28px', fontWeight: '700', letterSpacing: '-0.02em', margin: '0 0 8px' }}>How long is the shoot?</h2>
@@ -286,7 +253,6 @@ Include 4-6 categories with 3-6 shots each. Make it specific to the event type a
               </div>
             )}
 
-            {/* Navigation buttons */}
             <div style={{ display: 'flex', gap: '12px', marginTop: '40px' }}>
               {stepIndex > 0 && (
                 <button onClick={() => setStepIndex(i => i - 1)}
@@ -307,7 +273,6 @@ Include 4-6 categories with 3-6 shots each. Make it specific to the event type a
               )}
             </div>
 
-            {/* Saved lists */}
             {user && savedLists.length > 0 && stepIndex === 0 && (
               <div style={{ marginTop: '64px', paddingTop: '48px', borderTop: '0.5px solid rgba(255,255,255,0.08)' }}>
                 <h2 style={{ color: '#fff', fontSize: '18px', fontWeight: '700', margin: '0 0 20px' }}>Your saved shot lists</h2>
