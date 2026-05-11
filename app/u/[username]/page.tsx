@@ -18,6 +18,7 @@ export default function ProfilePage() {
   const router = useRouter()
   const [user, setUser] = useState<any>(null)
   const [currentUser, setCurrentUser] = useState<any>(null)
+  const [shotLists, setShotLists] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -36,6 +37,14 @@ export default function ProfilePage() {
     }
     load()
   }, [username])
+
+  useEffect(() => {
+    if (currentUser?.username === username) {
+      fetch('/api/shot-lists').then(r => r.json()).then(d => {
+        if (d.lists) setShotLists(d.lists)
+      })
+    }
+  }, [currentUser, username])
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' })
@@ -62,7 +71,6 @@ export default function ProfilePage() {
 
   return (
     <main style={{ minHeight: '100vh', background: 'linear-gradient(to bottom, #0a0a0a, #111827)', fontFamily: 'var(--font-inter), sans-serif' }}>
-      {/* Nav */}
       <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 40px', borderBottom: '0.5px solid rgba(255,255,255,0.08)', position: 'sticky', top: 0, background: 'rgba(10,10,10,0.85)', backdropFilter: 'blur(12px)', zIndex: 100 }}>
         <a href="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
           <svg width="26" height="14" viewBox="0 0 4191.67 2190.15" fill="none">
@@ -83,7 +91,6 @@ export default function ProfilePage() {
       </nav>
 
       <div style={{ maxWidth: '680px', margin: '0 auto', padding: '60px 24px' }}>
-        {/* Avatar + info */}
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '24px', marginBottom: '24px' }}>
           <div style={{ width: '88px', height: '88px', borderRadius: '50%', background: 'rgba(255,255,255,0.06)', border: `2px solid ${accent}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
             {user.profile_picture_url ? (
@@ -127,7 +134,6 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Edit profile button — only for owner */}
         {isOwner && (
           <div style={{ marginBottom: '28px' }}>
             <a href={`/u/${username}/edit`}
@@ -141,7 +147,6 @@ export default function ProfilePage() {
           <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '15px', lineHeight: '1.7', marginBottom: '32px' }}>{user.bio}</p>
         )}
 
-        {/* Stats */}
         <div style={{ display: 'flex', gap: '16px', marginBottom: '40px' }}>
           <div style={{ background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '20px 24px', flex: 1, textAlign: 'center' }}>
             <div style={{ color: accent, fontSize: '24px', fontWeight: '700', letterSpacing: '-0.02em' }}>{user.nodes}</div>
@@ -160,6 +165,36 @@ export default function ProfilePage() {
             <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '12px', marginTop: '2px' }}>Joined</div>
           </div>
         </div>
+
+        {/* Shot lists — only visible to owner */}
+        {isOwner && (
+          <div style={{ marginTop: '48px', paddingTop: '40px', borderTop: '0.5px solid rgba(255,255,255,0.08)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+              <h2 style={{ color: '#fff', fontSize: '18px', fontWeight: '700', margin: 0 }}>Shot lists</h2>
+              <a href="/tools/shot-list" style={{ color: accent, fontSize: '13px', textDecoration: 'none', fontWeight: '600' }}>+ New</a>
+            </div>
+            {shotLists.length === 0 ? (
+              <div style={{ background: 'rgba(255,255,255,0.02)', border: '0.5px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '32px', textAlign: 'center' }}>
+                <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '14px', marginBottom: '12px' }}>No saved shot lists yet</div>
+                <a href="/tools/shot-list" style={{ color: accent, fontSize: '13px', fontWeight: '700', textDecoration: 'none', background: `${accent}15`, padding: '8px 18px', borderRadius: '8px', border: `0.5px solid ${accent}30` }}>Generate your first one</a>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {shotLists.map((list: any) => (
+                  <a key={list.id} href="/tools/shot-list" style={{ textDecoration: 'none' }}>
+                    <div style={{ background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div>
+                        <div style={{ color: '#fff', fontSize: '14px', fontWeight: '700', marginBottom: '4px' }}>{list.title}</div>
+                        <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '12px' }}>{list.media_type} · {list.event_type} · {new Date(list.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+                      </div>
+                      <span style={{ color: 'rgba(255,255,255,0.2)' }}>→</span>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </main>
   )
