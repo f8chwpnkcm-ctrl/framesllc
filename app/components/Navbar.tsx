@@ -1,8 +1,15 @@
 'use client'
 
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 
 export default function Navbar({ onJoinWaitlist }: { onJoinWaitlist?: () => void }) {
+  const [user, setUser] = useState<any>(null)
+
+  useEffect(() => {
+    fetch('/api/auth/me').then(r => r.json()).then(d => setUser(d.user))
+  }, [])
+
   return (
     <nav className="navbar-inner" style={{
       display: 'flex',
@@ -27,21 +34,21 @@ export default function Navbar({ onJoinWaitlist }: { onJoinWaitlist?: () => void
         <Link href="/marketplace" className="nav-link" style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px' }}>Marketplace</Link>
         <Link href="/creators" className="nav-link" style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px' }}>Creators</Link>
         <Link href="/tools" className="nav-link" style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px' }}>Tools</Link>
-        <button
-          onClick={onJoinWaitlist}
-          className="btn-primary"
-          style={{
-            background: '#FFE500',
-            color: '#000',
-            fontSize: '12px',
-            fontWeight: '700',
-            padding: '8px 18px',
-            borderRadius: '6px',
-            border: 'none',
-            cursor: 'pointer',
-          }}>
-          Join waitlist
-        </button>
+        {user ? (
+          <Link href={`/u/${user.username}`} style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
+            <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: 'rgba(255,229,0,0.15)', border: '1.5px solid #FFE500', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ color: '#FFE500', fontSize: '12px', fontWeight: '700' }}>{user.username[0].toUpperCase()}</span>
+            </div>
+            <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px' }}>@{user.username}</span>
+          </Link>
+        ) : (
+          <button
+            onClick={onJoinWaitlist}
+            className="btn-primary"
+            style={{ background: '#FFE500', color: '#000', fontSize: '12px', fontWeight: '700', padding: '8px 18px', borderRadius: '6px', border: 'none', cursor: 'pointer' }}>
+            Join waitlist
+          </button>
+        )}
       </div>
     </nav>
   )
