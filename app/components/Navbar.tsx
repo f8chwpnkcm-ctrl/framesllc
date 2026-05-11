@@ -31,23 +31,24 @@ export default function Navbar({ onJoinWaitlist }: { onJoinWaitlist?: () => void
       </Link>
 
       <div className="navbar-links" style={{ display: 'flex', alignItems: 'center', gap: '28px' }}>
-        <Link href="/marketplace" className="nav-link" style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px' }}>Marketplace</Link>
-        <Link href="/creators" className="nav-link" style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px' }}>Creators</Link>
-        <Link href="/tools" className="nav-link" style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px' }}>Tools</Link>
+        <Link href="/marketplace" className="nav-link" style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', textDecoration: 'none' }}>Marketplace</Link>
+        <Link href="/creators" className="nav-link" style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', textDecoration: 'none' }}>Creators</Link>
+        <Link href="/tools" className="nav-link" style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', textDecoration: 'none' }}>Tools</Link>
         {user ? (
           <Link href={`/u/${user.username}`} style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
-            <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: 'rgba(255,229,0,0.15)', border: '1.5px solid #FFE500', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ color: '#FFE500', fontSize: '12px', fontWeight: '700' }}>{user.username[0].toUpperCase()}</span>
+            <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: 'rgba(255,229,0,0.15)', border: '1.5px solid #FFE500', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+              {user.profile_picture_url ? (
+                <img src={user.profile_picture_url} alt={user.username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <span style={{ color: '#FFE500', fontSize: '12px', fontWeight: '700' }}>{user.username[0].toUpperCase()}</span>
+              )}
             </div>
             <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px' }}>@{user.username}</span>
           </Link>
         ) : (
-          <button
-            onClick={onJoinWaitlist}
-            className="btn-primary"
-            style={{ background: '#FFE500', color: '#000', fontSize: '12px', fontWeight: '700', padding: '8px 18px', borderRadius: '6px', border: 'none', cursor: 'pointer' }}>
-            Join waitlist
-          </button>
+          <Link href="/login" style={{ background: '#FFE500', color: '#000', fontSize: '12px', fontWeight: '700', padding: '8px 18px', borderRadius: '6px', textDecoration: 'none' }}>
+            Log in
+          </Link>
         )}
       </div>
     </nav>
