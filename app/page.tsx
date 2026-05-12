@@ -25,27 +25,27 @@ function WaitlistModal({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: '#111827', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '40px', width: '100%', maxWidth: '440px', margin: '0 20px', position: 'relative' as const }}>
-        <button onClick={onClose} style={{ position: 'absolute', top: '16px', right: '16px', background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.4)', fontSize: '20px', cursor: 'pointer' }}>✕</button>
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(8px)' }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: '#0f0f0f', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '48px', width: '100%', maxWidth: '440px', margin: '0 20px', position: 'relative' as const }}>
+        <button onClick={onClose} style={{ position: 'absolute', top: '20px', right: '20px', background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.3)', fontSize: '20px', cursor: 'pointer' }}>✕</button>
         {status === 'success' ? (
           <div style={{ textAlign: 'center', padding: '20px 0' }}>
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>👑</div>
-            <div style={{ color: '#fff', fontSize: '20px', fontWeight: '700', marginBottom: '8px' }}>You're on the list!</div>
-            <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '14px' }}>We'll reach out when your spot is ready.</div>
+            <div style={{ fontSize: '56px', marginBottom: '20px' }}>👑</div>
+            <div style={{ color: '#fff', fontSize: '22px', fontWeight: '700', letterSpacing: '-0.02em', marginBottom: '10px' }}>You're on the list.</div>
+            <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '14px', lineHeight: '1.6' }}>We'll reach out when your spot opens up.</div>
           </div>
         ) : (
           <>
-            <div style={{ marginBottom: '24px' }}>
-              <div style={{ color: '#fff', fontSize: '22px', fontWeight: '700', letterSpacing: '-0.02em', marginBottom: '8px' }}>Join the waitlist</div>
-              <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '14px' }}>Be among the first creators on Nodable.</div>
+            <div style={{ marginBottom: '32px' }}>
+              <div style={{ color: '#fff', fontSize: '24px', fontWeight: '700', letterSpacing: '-0.02em', marginBottom: '10px' }}>Claim your spot.</div>
+              <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '14px', lineHeight: '1.6' }}>Early access is limited. Be among the first creators on Nodable.</div>
             </div>
             <input type="email" placeholder="your@email.com" value={email} onChange={e => setEmail(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-              style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.12)', borderRadius: '10px', padding: '14px 16px', fontSize: '14px', color: '#fff', outline: 'none', fontFamily: 'var(--font-inter), sans-serif', boxSizing: 'border-box' as const, marginBottom: '12px' }} />
+              style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.12)', borderRadius: '10px', padding: '16px', fontSize: '15px', color: '#fff', outline: 'none', fontFamily: 'var(--font-inter), sans-serif', boxSizing: 'border-box' as const, marginBottom: '12px' }} />
             {message && <div style={{ color: status === 'error' ? 'rgba(255,100,100,0.8)' : '#22C55E', fontSize: '13px', marginBottom: '12px' }}>{message}</div>}
             <button onClick={handleSubmit} disabled={status === 'loading'}
-              style={{ width: '100%', background: '#FFE500', color: '#000', fontSize: '14px', fontWeight: '700', padding: '14px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter), sans-serif' }}>
-              {status === 'loading' ? '...' : 'Join waitlist'}
+              style={{ width: '100%', background: '#FFE500', color: '#000', fontSize: '15px', fontWeight: '700', padding: '15px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter), sans-serif', letterSpacing: '-0.01em' }}>
+              {status === 'loading' ? '...' : 'Join the waitlist'}
             </button>
           </>
         )}
@@ -77,165 +77,184 @@ export default function HomePage() {
   }
 
   return (
-    <main style={{ minHeight: '100vh', background: 'linear-gradient(to bottom, #0a0a0a, #0f1318)', fontFamily: 'var(--font-inter), sans-serif' }}>
+    <main style={{ minHeight: '100vh', background: '#080808', fontFamily: 'var(--font-inter), sans-serif', overscrollBehavior: 'none' }}>
       {showModal && <WaitlistModal onClose={() => setShowModal(false)} />}
       <Navbar onJoinWaitlist={() => setShowModal(true)} />
 
-      {/* Hero */}
-      <section style={{ maxWidth: '800px', margin: '0 auto', padding: '100px 24px 80px', textAlign: 'center' }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255,229,0,0.1)', border: '0.5px solid rgba(255,229,0,0.25)', padding: '5px 14px', borderRadius: '20px', marginBottom: '32px' }}>
-          <div style={{ width: '5px', height: '5px', background: '#FFE500', borderRadius: '50%' }} />
-          <span style={{ background: 'linear-gradient(90deg, #FFE500, #FFC200)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontSize: '11px', fontWeight: '600' }}>Now in early access</span>
+      {/* ── HERO ── */}
+      <section style={{ maxWidth: '1000px', margin: '0 auto', padding: '120px 24px 100px' }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,229,0,0.08)', border: '0.5px solid rgba(255,229,0,0.2)', padding: '6px 16px', borderRadius: '20px', marginBottom: '48px' }}>
+          <div style={{ width: '6px', height: '6px', background: '#FFE500', borderRadius: '50%', animation: 'pulse 2s infinite' }} />
+          <span style={{ color: '#FFE500', fontSize: '12px', fontWeight: '600', letterSpacing: '0.04em' }}>EARLY ACCESS OPEN</span>
         </div>
-        <h1 style={{ color: '#fff', fontSize: 'clamp(40px, 7vw, 72px)', fontWeight: '700', letterSpacing: '-0.04em', lineHeight: '1.04', margin: '0 0 24px' }}>
-          Where the<br /><span style={{ background: 'linear-gradient(90deg, #FFE500, #FFC200)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>standards are set.</span>
+
+        <h1 style={{ color: '#fff', fontSize: 'clamp(52px, 9vw, 96px)', fontWeight: '700', letterSpacing: '-0.04em', lineHeight: '0.95', margin: '0 0 0', maxWidth: '800px' }}>
+          Where the
         </h1>
-        <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '18px', lineHeight: '1.7', maxWidth: '520px', margin: '0 auto 40px' }}>
-          The platform built for creators who take their craft seriously. Tools, community, and a reputation system that rewards real work.
-        </p>
-        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' as const }}>
-          {currentUser ? (
-            <a href={`/u/${currentUser.username}`} style={{ background: '#FFE500', color: '#000', fontSize: '15px', fontWeight: '700', padding: '14px 32px', borderRadius: '10px', textDecoration: 'none' }}>
-              Go to my profile →
-            </a>
-          ) : (
-            <>
-              <button onClick={() => setShowModal(true)} style={{ background: '#FFE500', color: '#000', fontSize: '15px', fontWeight: '700', padding: '14px 32px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter), sans-serif' }}>
-                Join the waitlist
-              </button>
-              <a href="/login" style={{ background: 'transparent', color: 'rgba(255,255,255,0.5)', fontSize: '15px', fontWeight: '500', padding: '14px 32px', borderRadius: '10px', border: '0.5px solid rgba(255,255,255,0.15)', textDecoration: 'none' }}>
-                Log in
+        <h1 style={{ fontSize: 'clamp(52px, 9vw, 96px)', fontWeight: '700', letterSpacing: '-0.04em', lineHeight: '0.95', margin: '0 0 40px', background: 'linear-gradient(90deg, #FFE500, #FFC200)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+          standards are set.
+        </h1>
+
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '48px', flexWrap: 'wrap' as const }}>
+          <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '18px', lineHeight: '1.75', maxWidth: '460px', margin: 0, flex: '1 1 300px' }}>
+            Nodable is a platform built for creators who take their craft seriously — tools that save time, a community that raises the bar, and a reputation system built around real work.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: '0 0 auto' }}>
+            {currentUser ? (
+              <a href={`/u/${currentUser.username}`} style={{ background: '#FFE500', color: '#000', fontSize: '15px', fontWeight: '700', padding: '16px 36px', borderRadius: '10px', textDecoration: 'none', letterSpacing: '-0.01em', display: 'inline-block' }}>
+                My profile →
               </a>
-            </>
-          )}
+            ) : (
+              <>
+                <button onClick={() => setShowModal(true)} style={{ background: '#FFE500', color: '#000', fontSize: '15px', fontWeight: '700', padding: '16px 36px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter), sans-serif', letterSpacing: '-0.01em' }}>
+                  Join the waitlist
+                </button>
+                <a href="/login" style={{ color: 'rgba(255,255,255,0.3)', fontSize: '14px', textDecoration: 'none', textAlign: 'center' }}>
+                  Already have an account? Log in →
+                </a>
+              </>
+            )}
+          </div>
         </div>
       </section>
 
-      {/* What is Nodable — explainer */}
-      <section style={{ maxWidth: '680px', margin: '0 auto', padding: '0 24px 80px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
-          {[
-            {
-              icon: '🎥',
-              title: 'Built for creators',
-              desc: 'Nodable is designed around how creators actually work — on set, between shoots, and when it\'s time to get paid.'
-            },
-            {
-              icon: '🛠️',
-              title: 'Tools that save time',
-              desc: 'Shot list generator, invoice builder, mood board creator. AI-powered tools that cut hours off your workflow.'
-            },
-            {
-              icon: '👑',
-              title: 'A reputation that means something',
-              desc: 'Earn Nodes for your contributions. Get Crowned by the community. Your standing on Nodable reflects your real-world output.'
-            },
-            {
-              icon: '🤝',
-              title: 'Find your people',
-              desc: 'Connect with other creators, signal when you\'re open for work, and build a network that\'s actually relevant to your craft.'
-            },
-          ].map((item, i) => (
-            <div key={i} style={{ background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '24px' }}>
-              <div style={{ fontSize: '28px', marginBottom: '12px' }}>{item.icon}</div>
-              <div style={{ color: '#fff', fontSize: '15px', fontWeight: '700', marginBottom: '8px', letterSpacing: '-0.01em' }}>{item.title}</div>
-              <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', lineHeight: '1.7' }}>{item.desc}</div>
-            </div>
+      {/* ── MARQUEE STRIP ── */}
+      <div style={{ borderTop: '0.5px solid rgba(255,255,255,0.06)', borderBottom: '0.5px solid rgba(255,255,255,0.06)', padding: '14px 0', overflow: 'hidden', marginBottom: '0' }}>
+        <div style={{ display: 'flex', gap: '48px', animation: 'marquee 20s linear infinite', width: 'max-content' }}>
+          {['Tools built for creators', 'Shot list generator', 'Invoice builder', 'Mood board creator', 'Drops feed', 'Creator network', 'Verified profiles', 'Earn your reputation', 'Tools built for creators', 'Shot list generator', 'Invoice builder', 'Mood board creator', 'Drops feed', 'Creator network'].map((item, i) => (
+            <span key={i} style={{ color: 'rgba(255,255,255,0.2)', fontSize: '12px', fontWeight: '600', letterSpacing: '0.08em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+              {item} <span style={{ color: '#FFE500', marginLeft: '24px' }}>✦</span>
+            </span>
           ))}
         </div>
-      </section>
+      </div>
 
-      {/* Nodes & Crowns explainer */}
-      <section style={{ maxWidth: '680px', margin: '0 auto', padding: '0 24px 80px' }}>
-        <div style={{ marginBottom: '24px', textAlign: 'center' }}>
-          <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '8px' }}>The Nodable economy</div>
-          <h2 style={{ color: '#fff', fontSize: '24px', fontWeight: '700', letterSpacing: '-0.02em', margin: 0 }}>Earn your place in the network.</h2>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-          <div style={{ background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '28px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-              <div style={{ width: '36px', height: '36px', background: 'rgba(255,229,0,0.1)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" fill="#FFE500"/><circle cx="4" cy="6" r="2" fill="#FFE500" opacity="0.5"/><circle cx="20" cy="6" r="2" fill="#FFE500" opacity="0.5"/><circle cx="4" cy="18" r="2" fill="#FFE500" opacity="0.5"/><circle cx="20" cy="18" r="2" fill="#FFE500" opacity="0.5"/><line x1="12" y1="12" x2="4" y2="6" stroke="#FFE500" strokeWidth="1" opacity="0.3"/><line x1="12" y1="12" x2="20" y2="6" stroke="#FFE500" strokeWidth="1" opacity="0.3"/><line x1="12" y1="12" x2="4" y2="18" stroke="#FFE500" strokeWidth="1" opacity="0.3"/><line x1="12" y1="12" x2="20" y2="18" stroke="#FFE500" strokeWidth="1" opacity="0.3"/></svg>
-              </div>
-              <div>
-                <div style={{ color: '#fff', fontSize: '16px', fontWeight: '700' }}>Nodes</div>
-                <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px' }}>Your reputation score</div>
-              </div>
-            </div>
-            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', lineHeight: '1.7', margin: '0 0 16px' }}>Nodes represent your standing in the Nodable network. You can't buy them — you earn them through real contributions.</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {['Post a Drop', 'Receive reactions', 'Collab interest signals', 'Complete your profile'].map(item => (
-                <div key={item} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#FFE500', flexShrink: 0 }} />
-                  <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px' }}>{item}</span>
-                </div>
-              ))}
-            </div>
+      {/* ── WHAT IS NODABLE ── */}
+      <section style={{ maxWidth: '1000px', margin: '0 auto', padding: '120px 24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '80px', alignItems: 'center' }}>
+          <div>
+            <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '20px' }}>What is Nodable</div>
+            <h2 style={{ color: '#fff', fontSize: 'clamp(32px, 4vw, 52px)', fontWeight: '700', letterSpacing: '-0.03em', lineHeight: '1.08', margin: '0 0 28px' }}>
+              A platform that actually<br />
+              <span style={{ color: '#FFE500' }}>gets it.</span>
+            </h2>
+            <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '16px', lineHeight: '1.8', margin: '0 0 24px' }}>
+              Most platforms weren't built with creators in mind. Nodable was. Everything here — the tools, the community, the economy — was designed around how you actually work.
+            </p>
+            <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '16px', lineHeight: '1.8', margin: 0 }}>
+              No algorithm deciding your worth. No ads in your face. Just a space where the standard is high and the tools are real.
+            </p>
           </div>
-          <div style={{ background: 'rgba(255,229,0,0.04)', border: '0.5px solid rgba(255,229,0,0.15)', borderRadius: '16px', padding: '28px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-              <div style={{ width: '36px', height: '36px', background: 'rgba(255,229,0,0.15)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg width="16" height="12" viewBox="0 0 4191.67 2190.15" fill="none"><path d="M767.96,1876.06c348.4-78.57,799.8-147.81,1327.87-147.54,525.29,27,974.51,69.24,1321.72,147.54,59.43-520.49,118.85-1040.98,178.28-1561.48-295.08,235.66-590.16,471.31-885.25,706.97-204.92-226.68-409.84-453.35-614.75-680.03-206.97,234.87-413.93,469.75-620.9,704.62-293.03-234.87-586.07-469.75-879.1-704.62,57.38,511.51,114.75,1023.03,172.13,1534.54Z" fill="#FFE500"/></svg>
-              </div>
-              <div>
-                <div style={{ background: 'linear-gradient(90deg, #FFE500, #FFC200)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontSize: '16px', fontWeight: '700' }}>Crowns</div>
-                <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px' }}>The Nodable currency</div>
-              </div>
-            </div>
-            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', lineHeight: '1.7', margin: '0 0 16px' }}>Crowns are how you show real appreciation. You get 10 free every day just for logging in. Crown a creator's Drop and they earn Nodes.</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {['+10 free daily on login', 'Crown drops you love (3/day)', 'Unlock premium features', 'Support other creators'].map(item => (
-                <div key={item} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#FFE500', flexShrink: 0 }} />
-                  <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px' }}>{item}</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+            {[
+              { label: 'AI-powered creator tools', sub: 'Shot lists, invoices, mood boards — built for your workflow' },
+              { label: 'A feed built for craft', sub: 'Share what you\'re shooting. React. Connect. No noise.' },
+              { label: 'Reputation that means something', sub: 'Earn Nodes for real contributions. Can\'t be bought.' },
+              { label: 'Verified creator profiles', sub: 'Your profile is your portfolio. Make it count.' },
+            ].map((item, i) => (
+              <div key={i} style={{ padding: '20px 0', borderBottom: '0.5px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
+                <div style={{ width: '6px', height: '6px', background: '#FFE500', borderRadius: '50%', marginTop: '8px', flexShrink: 0 }} />
+                <div>
+                  <div style={{ color: '#fff', fontSize: '15px', fontWeight: '700', marginBottom: '4px', letterSpacing: '-0.01em' }}>{item.label}</div>
+                  <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: '13px', lineHeight: '1.5' }}>{item.sub}</div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Live feed preview */}
+      {/* ── NODES & CROWNS ── */}
+      <section style={{ background: '#0d0d0d', borderTop: '0.5px solid rgba(255,255,255,0.06)', borderBottom: '0.5px solid rgba(255,255,255,0.06)', padding: '120px 24px' }}>
+        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '72px' }}>
+            <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '20px' }}>The economy</div>
+            <h2 style={{ color: '#fff', fontSize: 'clamp(32px, 4vw, 52px)', fontWeight: '700', letterSpacing: '-0.03em', lineHeight: '1.08', margin: '0 auto 20px', maxWidth: '600px' }}>
+              Earn your place<br />in the network.
+            </h2>
+            <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '16px', lineHeight: '1.7', maxWidth: '480px', margin: '0 auto' }}>
+              On Nodable, reputation is earned — not bought. Two currencies power the platform.
+            </p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+            <div style={{ background: '#111', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '20px', padding: '48px' }}>
+              <div style={{ fontSize: '40px', fontWeight: '700', letterSpacing: '-0.03em', color: '#fff', marginBottom: '8px' }}>Nodes</div>
+              <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '13px', marginBottom: '28px', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Your reputation score</div>
+              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '15px', lineHeight: '1.8', marginBottom: '32px' }}>
+                Nodes represent your standing in the Nodable community. You can't buy them — you earn them through real contributions. Posts, reactions, collabs.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {[['Post a Drop', '+2'], ['Someone Fires your Drop', '+1'], ['Someone Crowns your Drop', '+5'], ['Collab interest signal', '+2'], ['Complete your profile', 'up to +50']].map(([action, nodes]) => (
+                  <div key={action} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px' }}>
+                    <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px' }}>{action}</span>
+                    <span style={{ color: '#FFE500', fontSize: '13px', fontWeight: '700' }}>{nodes} Nodes</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ background: 'rgba(255,229,0,0.04)', border: '0.5px solid rgba(255,229,0,0.15)', borderRadius: '20px', padding: '48px' }}>
+              <div style={{ fontSize: '40px', fontWeight: '700', letterSpacing: '-0.03em', background: 'linear-gradient(90deg, #FFE500, #FFC200)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: '8px' }}>Crowns</div>
+              <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '13px', marginBottom: '28px', letterSpacing: '0.04em', textTransform: 'uppercase' }}>The Nodable currency</div>
+              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '15px', lineHeight: '1.8', marginBottom: '32px' }}>
+                Crowns are how you show real appreciation. Free to earn daily. Limited to spend. When you Crown someone's Drop, you're saying this is elite — and they earn Nodes for it.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {[['+10 free on login daily', 'Just show up'], ['Crown Drops you love', '3 per day max'], ['Unlock platform features', 'Coming soon'], ['Support other creators', 'Always free']].map(([action, note]) => (
+                  <div key={action} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: 'rgba(255,229,0,0.04)', borderRadius: '8px', border: '0.5px solid rgba(255,229,0,0.08)' }}>
+                    <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px' }}>{action}</span>
+                    <span style={{ color: 'rgba(255,229,0,0.6)', fontSize: '12px', fontWeight: '600' }}>{note}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── LIVE DROPS ── */}
       {drops.length > 0 && (
-        <section style={{ maxWidth: '680px', margin: '0 auto', padding: '0 24px 80px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+        <section style={{ maxWidth: '1000px', margin: '0 auto', padding: '120px 24px' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '56px', gap: '24px', flexWrap: 'wrap' as const }}>
             <div>
-              <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '6px' }}>Live from the community</div>
-              <h2 style={{ color: '#fff', fontSize: '22px', fontWeight: '700', letterSpacing: '-0.02em', margin: 0 }}>Latest drops</h2>
+              <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '16px' }}>Live from the community</div>
+              <h2 style={{ color: '#fff', fontSize: 'clamp(32px, 4vw, 52px)', fontWeight: '700', letterSpacing: '-0.03em', lineHeight: '1.08', margin: 0 }}>
+                What creators<br />are dropping.
+              </h2>
             </div>
-            <a href="/feed" style={{ color: '#FFE500', fontSize: '13px', fontWeight: '600', textDecoration: 'none' }}>See all →</a>
+            <a href="/feed" style={{ color: '#FFE500', fontSize: '14px', fontWeight: '600', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+              See the full feed →
+            </a>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {drops.map((drop: any) => {
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+            {drops.map((drop: any, i: number) => {
               const author = drop.users
               const accent = themeColors[author?.theme_color] || '#FFE500'
               const fireCount = drop.drop_reactions?.filter((r: any) => r.reaction === 'fire').length || 0
               const crownCount = drop.drop_reactions?.filter((r: any) => r.reaction === 'crown').length || 0
               return (
                 <a key={drop.id} href="/feed" style={{ textDecoration: 'none' }}>
-                  <div style={{ background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '18px 20px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                      <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(255,255,255,0.06)', border: `1.5px solid ${accent}`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
-                        {author?.profile_picture_url ? <img src={author.profile_picture_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" /> : <span style={{ color: accent, fontSize: '13px', fontWeight: '700' }}>{author?.username?.[0]?.toUpperCase()}</span>}
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                          <span style={{ color: '#fff', fontSize: '13px', fontWeight: '700' }}>@{author?.username}</span>
-                          {author?.is_verified && (
-                            <span style={{ background: accent, borderRadius: '50%', width: '14px', height: '14px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-                              <svg width="7" height="7" viewBox="0 0 10 10" fill="none"><path d="M2 5l2 2 4-4" stroke="#000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                            </span>
-                          )}
+                  <div style={{ padding: '28px 0', borderBottom: '0.5px solid rgba(255,255,255,0.06)', display: 'grid', gridTemplateColumns: '1fr auto', gap: '24px', alignItems: 'start' }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                        <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(255,255,255,0.06)', border: `1.5px solid ${accent}`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+                          {author?.profile_picture_url ? <img src={author.profile_picture_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" /> : <span style={{ color: accent, fontSize: '12px', fontWeight: '700' }}>{author?.username?.[0]?.toUpperCase()}</span>}
                         </div>
-                        <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px' }}>{timeAgo(drop.created_at)}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ color: '#fff', fontSize: '13px', fontWeight: '700' }}>@{author?.username}</span>
+                          {author?.is_verified && <span style={{ background: accent, borderRadius: '50%', width: '14px', height: '14px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}><svg width="7" height="7" viewBox="0 0 10 10" fill="none"><path d="M2 5l2 2 4-4" stroke="#000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg></span>}
+                          {drop.shoot_type && <span style={{ background: `${accent}12`, color: accent, fontSize: '10px', fontWeight: '600', padding: '2px 8px', borderRadius: '20px' }}>{drop.shoot_type}</span>}
+                        </div>
                       </div>
-                      {drop.shoot_type && <span style={{ background: `${accent}12`, color: accent, fontSize: '10px', fontWeight: '600', padding: '3px 8px', borderRadius: '20px', border: `0.5px solid ${accent}25` }}>{drop.shoot_type}</span>}
+                      <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '16px', lineHeight: '1.65', margin: 0, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as any}>{drop.caption}</p>
                     </div>
-                    <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '14px', lineHeight: '1.6', margin: '0 0 10px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as any}>{drop.caption}</p>
-                    <div style={{ display: 'flex', gap: '12px' }}>
-                      {fireCount > 0 && <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '12px' }}>🔥 {fireCount}</span>}
-                      {crownCount > 0 && <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '12px' }}>👑 {crownCount}</span>}
-                      {drop.drop_comments?.length > 0 && <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '12px' }}>💬 {drop.drop_comments.length}</span>}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px', flexShrink: 0 }}>
+                      <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '12px' }}>{timeAgo(drop.created_at)}</span>
+                      <div style={{ display: 'flex', gap: '10px' }}>
+                        {fireCount > 0 && <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '12px' }}>🔥 {fireCount}</span>}
+                        {crownCount > 0 && <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '12px' }}>👑 {crownCount}</span>}
+                      </div>
                     </div>
                   </div>
                 </a>
@@ -245,98 +264,123 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* Creators preview */}
+      {/* ── CREATORS ── */}
       {creators.length > 0 && (
-        <section style={{ maxWidth: '680px', margin: '0 auto', padding: '0 24px 80px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
-            <div>
-              <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '6px' }}>The network</div>
-              <h2 style={{ color: '#fff', fontSize: '22px', fontWeight: '700', letterSpacing: '-0.02em', margin: 0 }}>Creators on Nodable</h2>
+        <section style={{ background: '#0d0d0d', borderTop: '0.5px solid rgba(255,255,255,0.06)', padding: '120px 24px' }}>
+          <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '56px', gap: '24px', flexWrap: 'wrap' as const }}>
+              <div>
+                <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '16px' }}>The network</div>
+                <h2 style={{ color: '#fff', fontSize: 'clamp(32px, 4vw, 52px)', fontWeight: '700', letterSpacing: '-0.03em', lineHeight: '1.08', margin: 0 }}>
+                  Creators already<br />on Nodable.
+                </h2>
+              </div>
+              <a href="/creators" style={{ color: '#FFE500', fontSize: '14px', fontWeight: '600', textDecoration: 'none', flexShrink: 0 }}>Browse all creators →</a>
             </div>
-            <a href="/creators" style={{ color: '#FFE500', fontSize: '13px', fontWeight: '600', textDecoration: 'none' }}>See all →</a>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
-            {creators.map((creator: any) => {
-              const accent = themeColors[creator.theme_color] || '#FFE500'
-              return (
-                <a key={creator.id} href={`/u/${creator.username}`} style={{ textDecoration: 'none' }}>
-                  <div style={{ background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '20px 16px', textAlign: 'center' }}>
-                    <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(255,255,255,0.06)', border: `2px solid ${accent}`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', margin: '0 auto 12px' }}>
-                      {creator.profile_picture_url ? <img src={creator.profile_picture_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" /> : <span style={{ color: accent, fontSize: '20px', fontWeight: '700' }}>{creator.username[0].toUpperCase()}</span>}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px' }}>
+              {creators.map((creator: any) => {
+                const accent = themeColors[creator.theme_color] || '#FFE500'
+                return (
+                  <a key={creator.id} href={`/u/${creator.username}`} style={{ textDecoration: 'none' }}>
+                    <div style={{ background: '#111', border: '0.5px solid rgba(255,255,255,0.07)', borderRadius: '16px', padding: '28px 20px', textAlign: 'center' }}>
+                      <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(255,255,255,0.06)', border: `2px solid ${accent}`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', margin: '0 auto 16px' }}>
+                        {creator.profile_picture_url ? <img src={creator.profile_picture_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" /> : <span style={{ color: accent, fontSize: '24px', fontWeight: '700' }}>{creator.username[0].toUpperCase()}</span>}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', marginBottom: '6px' }}>
+                        <span style={{ color: '#fff', fontSize: '14px', fontWeight: '700', letterSpacing: '-0.01em' }}>@{creator.username}</span>
+                        {creator.is_verified && <span style={{ background: accent, borderRadius: '50%', width: '15px', height: '15px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}><svg width="7" height="7" viewBox="0 0 10 10" fill="none"><path d="M2 5l2 2 4-4" stroke="#000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg></span>}
+                      </div>
+                      {creator.real_name && <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: '12px', marginBottom: '4px' }}>{creator.real_name}</div>}
+                      {creator.location && <div style={{ color: 'rgba(255,255,255,0.25)', fontSize: '11px' }}>📍 {creator.location}</div>}
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', marginBottom: '4px' }}>
-                      <span style={{ color: '#fff', fontSize: '13px', fontWeight: '700' }}>@{creator.username}</span>
-                      {creator.is_verified && (
-                        <span style={{ background: accent, borderRadius: '50%', width: '14px', height: '14px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                          <svg width="7" height="7" viewBox="0 0 10 10" fill="none"><path d="M2 5l2 2 4-4" stroke="#000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                        </span>
-                      )}
-                    </div>
-                    {creator.location && <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px', marginBottom: '4px' }}>📍 {creator.location}</div>}
-                    {creator.camera_brand && <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px' }}>📷 {creator.camera_brand.charAt(0).toUpperCase() + creator.camera_brand.slice(1)}</div>}
-                  </div>
-                </a>
-              )
-            })}
+                  </a>
+                )
+              })}
+            </div>
           </div>
         </section>
       )}
 
-      {/* Tools section */}
-      <section style={{ maxWidth: '680px', margin: '0 auto', padding: '0 24px 80px' }}>
-        <div style={{ marginBottom: '24px' }}>
-          <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '6px' }}>Built for your workflow</div>
-          <h2 style={{ color: '#fff', fontSize: '22px', fontWeight: '700', letterSpacing: '-0.02em', margin: 0 }}>Creator tools</h2>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-          {[
-            { href: '/tools/shot-list', icon: '📋', title: 'Shot list creator', desc: 'AI-generated shot lists for any shoot' },
-            { href: '/tools/invoice', icon: '🧾', title: 'Invoice generator', desc: 'Professional invoices in seconds' },
-            { href: '/tools/mood-board', icon: '🎨', title: 'Mood board', desc: 'Turn a vibe into a creative brief' },
-            { href: '/tools', icon: '✦', title: 'More tools', desc: 'Contracts, planners, and more coming' },
-          ].map(tool => (
-            <a key={tool.href} href={tool.href} style={{ textDecoration: 'none' }}>
-              <div style={{ background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '20px' }}>
-                <div style={{ fontSize: '24px', marginBottom: '10px' }}>{tool.icon}</div>
-                <div style={{ color: '#fff', fontSize: '14px', fontWeight: '700', marginBottom: '4px' }}>{tool.title}</div>
-                <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px', lineHeight: '1.5' }}>{tool.desc}</div>
-              </div>
-            </a>
-          ))}
+      {/* ── TOOLS ── */}
+      <section style={{ maxWidth: '1000px', margin: '0 auto', padding: '120px 24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '80px', alignItems: 'start' }}>
+          <div style={{ position: 'sticky' as const, top: '100px' }}>
+            <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '20px' }}>The toolkit</div>
+            <h2 style={{ color: '#fff', fontSize: 'clamp(32px, 4vw, 52px)', fontWeight: '700', letterSpacing: '-0.03em', lineHeight: '1.08', margin: '0 0 24px' }}>
+              Tools that do<br />
+              <span style={{ color: '#FFE500' }}>the heavy lifting.</span>
+            </h2>
+            <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '15px', lineHeight: '1.8', margin: '0 0 32px' }}>
+              Every tool on Nodable was built to solve a real problem creators face. AI-powered, fast, and designed to get out of your way.
+            </p>
+            <a href="/tools" style={{ color: '#FFE500', fontSize: '14px', fontWeight: '600', textDecoration: 'none' }}>Explore all tools →</a>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+            {[
+              { href: '/tools/shot-list', num: '01', title: 'Shot list creator', desc: 'Describe your shoot and get a full, professional shot list in seconds. Paced by duration, tailored to your gear.' },
+              { href: '/tools/invoice', num: '02', title: 'Invoice generator', desc: 'Describe the job, set your rate, and get a clean invoice with AI-generated line items. Print or save as PDF.' },
+              { href: '/tools/mood-board', num: '03', title: 'Mood board generator', desc: 'Turn a feeling into a full creative brief. Color palette, lighting style, camera settings, LUT recommendations.' },
+              { href: '/tools', num: '04', title: 'More coming', desc: 'Contracts, shoot planners, cinematic settings advisor, and more. Built around how you actually work.' },
+            ].map(tool => (
+              <a key={tool.num} href={tool.href} style={{ textDecoration: 'none' }}>
+                <div style={{ padding: '28px 0', borderBottom: '0.5px solid rgba(255,255,255,0.06)', display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '24px', alignItems: 'start' }}>
+                  <div style={{ color: 'rgba(255,255,255,0.15)', fontSize: '13px', fontWeight: '700', fontFamily: 'monospace', paddingTop: '3px' }}>{tool.num}</div>
+                  <div>
+                    <div style={{ color: '#fff', fontSize: '17px', fontWeight: '700', letterSpacing: '-0.01em', marginBottom: '8px' }}>{tool.title}</div>
+                    <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: '14px', lineHeight: '1.6' }}>{tool.desc}</div>
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section style={{ maxWidth: '680px', margin: '0 auto', padding: '0 24px 80px' }}>
-        <div style={{ background: 'rgba(255,229,0,0.04)', border: '0.5px solid rgba(255,229,0,0.12)', borderRadius: '20px', padding: '48px 40px', textAlign: 'center' }}>
-          <h2 style={{ color: '#fff', fontSize: '28px', fontWeight: '700', letterSpacing: '-0.03em', margin: '0 0 16px' }}>Built by a creator.<br />For creators.</h2>
-          <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '15px', lineHeight: '1.8', maxWidth: '460px', margin: '0 auto 32px' }}>
-            Nodable exists because the tools creators need — and the community they deserve — didn't. No algorithm deciding your worth. No ads in your face. Just a platform that takes your craft as seriously as you do.
+      {/* ── FINAL CTA ── */}
+      <section style={{ background: '#FFE500', padding: '120px 24px' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
+          <h2 style={{ color: '#000', fontSize: 'clamp(40px, 6vw, 72px)', fontWeight: '700', letterSpacing: '-0.04em', lineHeight: '1.0', margin: '0 0 24px' }}>
+            Your work belongs here.
+          </h2>
+          <p style={{ color: 'rgba(0,0,0,0.55)', fontSize: '18px', lineHeight: '1.7', maxWidth: '480px', margin: '0 auto 48px' }}>
+            Early access is open. Join the waitlist and be among the first creators to set the standard on Nodable.
           </p>
-          {!currentUser && (
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' as const }}>
-              <button onClick={() => setShowModal(true)}
-                style={{ background: '#FFE500', color: '#000', fontSize: '14px', fontWeight: '700', padding: '13px 32px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter), sans-serif' }}>
-                Join the waitlist
-              </button>
-              <a href="/creators" style={{ background: 'transparent', color: 'rgba(255,255,255,0.4)', fontSize: '14px', padding: '13px 32px', borderRadius: '10px', border: '0.5px solid rgba(255,255,255,0.12)', textDecoration: 'none' }}>
-                Meet the creators
-              </a>
-            </div>
+          {!currentUser ? (
+            <button onClick={() => setShowModal(true)}
+              style={{ background: '#000', color: '#FFE500', fontSize: '16px', fontWeight: '700', padding: '18px 48px', borderRadius: '12px', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter), sans-serif', letterSpacing: '-0.01em' }}>
+              Join the waitlist
+            </button>
+          ) : (
+            <a href={`/u/${currentUser.username}`}
+              style={{ background: '#000', color: '#FFE500', fontSize: '16px', fontWeight: '700', padding: '18px 48px', borderRadius: '12px', textDecoration: 'none', display: 'inline-block', letterSpacing: '-0.01em' }}>
+              Go to my profile →
+            </a>
           )}
         </div>
       </section>
 
-      {/* Footer */}
-      <footer style={{ borderTop: '0.5px solid rgba(255,255,255,0.06)', padding: '32px 24px', textAlign: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '12px' }}>
-          <svg width="20" height="11" viewBox="0 0 4191.67 2190.15" fill="none">
-            <path d="M767.96,1876.06c348.4-78.57,799.8-147.81,1327.87-147.54,525.29,27,974.51,69.24,1321.72,147.54,59.43-520.49,118.85-1040.98,178.28-1561.48-295.08,235.66-590.16,471.31-885.25,706.97-204.92-226.68-409.84-453.35-614.75-680.03-206.97,234.87-413.93,469.75-620.9,704.62-293.03-234.87-586.07-469.75-879.1-704.62,57.38,511.51,114.75,1023.03,172.13,1534.54Z" fill="#FFE500"/>
-          </svg>
-          <span style={{ background: 'linear-gradient(90deg, #FFE500, #FFC200)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontSize: '14px', fontWeight: '700' }}>Nodable.</span>
+      {/* ── FOOTER ── */}
+      <footer style={{ background: '#000', padding: '48px 24px' }}>
+        <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' as const, gap: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <svg width="22" height="12" viewBox="0 0 4191.67 2190.15" fill="none">
+              <path d="M767.96,1876.06c348.4-78.57,799.8-147.81,1327.87-147.54,525.29,27,974.51,69.24,1321.72,147.54,59.43-520.49,118.85-1040.98,178.28-1561.48-295.08,235.66-590.16,471.31-885.25,706.97-204.92-226.68-409.84-453.35-614.75-680.03-206.97,234.87-413.93,469.75-620.9,704.62-293.03-234.87-586.07-469.75-879.1-704.62,57.38,511.51,114.75,1023.03,172.13,1534.54Z" fill="#FFE500"/>
+            </svg>
+            <span style={{ background: 'linear-gradient(90deg, #FFE500, #FFC200)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontSize: '15px', fontWeight: '700', letterSpacing: '-0.02em' }}>Nodable.</span>
+          </div>
+          <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
+            <a href="/feed" style={{ color: 'rgba(255,255,255,0.3)', fontSize: '13px', textDecoration: 'none' }}>Feed</a>
+            <a href="/creators" style={{ color: 'rgba(255,255,255,0.3)', fontSize: '13px', textDecoration: 'none' }}>Creators</a>
+            <a href="/tools" style={{ color: 'rgba(255,255,255,0.3)', fontSize: '13px', textDecoration: 'none' }}>Tools</a>
+          </div>
+          <div style={{ color: 'rgba(255,255,255,0.15)', fontSize: '12px' }}>© 2026 Nodable</div>
         </div>
-        <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: '12px' }}>© 2026 Nodable · trynodable.com · @trynodable</div>
       </footer>
+
+      <style>{`
+        @keyframes marquee { 0% { transform: translateX(0) } 100% { transform: translateX(-50%) } }
+        @keyframes pulse { 0%, 100% { opacity: 1 } 50% { opacity: 0.4 } }
+      `}</style>
     </main>
   )
 }
