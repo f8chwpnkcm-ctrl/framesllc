@@ -223,3 +223,35 @@ a {
   .navbar-links { display: none !important; }
   .navbar-inner { padding: 16px 24px !important; }
 }
+/* ── Homepage mobile fixes ── */
+@media (max-width: 680px) {
+  /* Stack two-col grids */
+  .home-two-col { grid-template-columns: 1fr !important; gap: 40px !important; }
+
+  /* Nodes & Crowns cards — stack and fix padding */
+  .nodes-crowns-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
+  .nodes-crowns-card { padding: 28px !important; }
+  .nodes-crowns-title { font-size: 28px !important; letter-spacing: -0.02em !important; }
+  .nodes-crowns-subtitle { font-size: 11px !important; white-space: normal !important; }
+
+  /* Section padding */
+  .home-section-pad { padding: 60px 20px !important; }
+
+  /* Hero */
+  .hero-flex { flex-direction: column !important; gap: 28px !important; }
+  .hero-cta { width: 100% !important; }
+  .hero-cta a, .hero-cta button { width: 100% !important; box-sizing: border-box !important; text-align: center !important; }
+
+  /* Drops grid */
+  .drop-row { grid-template-columns: 1fr !important; gap: 6px !important; }
+
+  /* Creators grid */
+  .creators-home-grid { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+
+  /* Tools two-col */
+  .tools-two-col { grid-template-columns: 1fr !important; gap: 32px !important; }
+  .tools-sticky { position: static !important; }
+
+  /* Footer */
+  .home-footer-inner { flex-direction: column !important; align-items: flex-start !important; gap: 16px !important; }
+}
