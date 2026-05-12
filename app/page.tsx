@@ -77,7 +77,7 @@ export default function HomePage() {
   }
 
   return (
-    <main style={{ minHeight: '100vh', background: 'linear-gradient(to bottom, #0a0a0a, #0f1318)', fontFamily: 'var(--font-inter), sans-serif', overscrollBehavior: 'none' }}>
+    <main style={{ minHeight: '100vh', background: 'linear-gradient(to bottom, #0a0a0a, #0f1318)', fontFamily: 'var(--font-inter), sans-serif' }}>
       {showModal && <WaitlistModal onClose={() => setShowModal(false)} />}
       <Navbar onJoinWaitlist={() => setShowModal(true)} />
 
@@ -91,7 +91,7 @@ export default function HomePage() {
           Where the<br /><span style={{ background: 'linear-gradient(90deg, #FFE500, #FFC200)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>standards are set.</span>
         </h1>
         <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '18px', lineHeight: '1.7', maxWidth: '520px', margin: '0 auto 40px' }}>
-          Nodable is the creator platform built for sports and events videographers. Tools, community, and a reputation system that rewards real work.
+          The platform built for creators who take their craft seriously. Tools, community, and a reputation system that rewards real work.
         </p>
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' as const }}>
           {currentUser ? (
@@ -108,6 +108,90 @@ export default function HomePage() {
               </a>
             </>
           )}
+        </div>
+      </section>
+
+      {/* What is Nodable — explainer */}
+      <section style={{ maxWidth: '680px', margin: '0 auto', padding: '0 24px 80px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+          {[
+            {
+              icon: '🎥',
+              title: 'Built for creators',
+              desc: 'Nodable is designed around how creators actually work — on set, between shoots, and when it\'s time to get paid.'
+            },
+            {
+              icon: '🛠️',
+              title: 'Tools that save time',
+              desc: 'Shot list generator, invoice builder, mood board creator. AI-powered tools that cut hours off your workflow.'
+            },
+            {
+              icon: '👑',
+              title: 'A reputation that means something',
+              desc: 'Earn Nodes for your contributions. Get Crowned by the community. Your standing on Nodable reflects your real-world output.'
+            },
+            {
+              icon: '🤝',
+              title: 'Find your people',
+              desc: 'Connect with other creators, signal when you\'re open for work, and build a network that\'s actually relevant to your craft.'
+            },
+          ].map((item, i) => (
+            <div key={i} style={{ background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '24px' }}>
+              <div style={{ fontSize: '28px', marginBottom: '12px' }}>{item.icon}</div>
+              <div style={{ color: '#fff', fontSize: '15px', fontWeight: '700', marginBottom: '8px', letterSpacing: '-0.01em' }}>{item.title}</div>
+              <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', lineHeight: '1.7' }}>{item.desc}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Nodes & Crowns explainer */}
+      <section style={{ maxWidth: '680px', margin: '0 auto', padding: '0 24px 80px' }}>
+        <div style={{ marginBottom: '24px', textAlign: 'center' }}>
+          <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '8px' }}>The Nodable economy</div>
+          <h2 style={{ color: '#fff', fontSize: '24px', fontWeight: '700', letterSpacing: '-0.02em', margin: 0 }}>Earn your place in the network.</h2>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div style={{ background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '28px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+              <div style={{ width: '36px', height: '36px', background: 'rgba(255,229,0,0.1)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" fill="#FFE500"/><circle cx="4" cy="6" r="2" fill="#FFE500" opacity="0.5"/><circle cx="20" cy="6" r="2" fill="#FFE500" opacity="0.5"/><circle cx="4" cy="18" r="2" fill="#FFE500" opacity="0.5"/><circle cx="20" cy="18" r="2" fill="#FFE500" opacity="0.5"/><line x1="12" y1="12" x2="4" y2="6" stroke="#FFE500" strokeWidth="1" opacity="0.3"/><line x1="12" y1="12" x2="20" y2="6" stroke="#FFE500" strokeWidth="1" opacity="0.3"/><line x1="12" y1="12" x2="4" y2="18" stroke="#FFE500" strokeWidth="1" opacity="0.3"/><line x1="12" y1="12" x2="20" y2="18" stroke="#FFE500" strokeWidth="1" opacity="0.3"/></svg>
+              </div>
+              <div>
+                <div style={{ color: '#fff', fontSize: '16px', fontWeight: '700' }}>Nodes</div>
+                <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px' }}>Your reputation score</div>
+              </div>
+            </div>
+            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', lineHeight: '1.7', margin: '0 0 16px' }}>Nodes represent your standing in the Nodable network. You can't buy them — you earn them through real contributions.</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {['Post a Drop', 'Receive reactions', 'Collab interest signals', 'Complete your profile'].map(item => (
+                <div key={item} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#FFE500', flexShrink: 0 }} />
+                  <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px' }}>{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div style={{ background: 'rgba(255,229,0,0.04)', border: '0.5px solid rgba(255,229,0,0.15)', borderRadius: '16px', padding: '28px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+              <div style={{ width: '36px', height: '36px', background: 'rgba(255,229,0,0.15)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg width="16" height="12" viewBox="0 0 4191.67 2190.15" fill="none"><path d="M767.96,1876.06c348.4-78.57,799.8-147.81,1327.87-147.54,525.29,27,974.51,69.24,1321.72,147.54,59.43-520.49,118.85-1040.98,178.28-1561.48-295.08,235.66-590.16,471.31-885.25,706.97-204.92-226.68-409.84-453.35-614.75-680.03-206.97,234.87-413.93,469.75-620.9,704.62-293.03-234.87-586.07-469.75-879.1-704.62,57.38,511.51,114.75,1023.03,172.13,1534.54Z" fill="#FFE500"/></svg>
+              </div>
+              <div>
+                <div style={{ background: 'linear-gradient(90deg, #FFE500, #FFC200)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontSize: '16px', fontWeight: '700' }}>Crowns</div>
+                <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px' }}>The Nodable currency</div>
+              </div>
+            </div>
+            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', lineHeight: '1.7', margin: '0 0 16px' }}>Crowns are how you show real appreciation. You get 10 free every day just for logging in. Crown a creator's Drop and they earn Nodes.</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {['+10 free daily on login', 'Crown drops you love (3/day)', 'Unlock premium features', 'Support other creators'].map(item => (
+                <div key={item} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#FFE500', flexShrink: 0 }} />
+                  <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px' }}>{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -209,7 +293,7 @@ export default function HomePage() {
             { href: '/tools/shot-list', icon: '📋', title: 'Shot list creator', desc: 'AI-generated shot lists for any shoot' },
             { href: '/tools/invoice', icon: '🧾', title: 'Invoice generator', desc: 'Professional invoices in seconds' },
             { href: '/tools/mood-board', icon: '🎨', title: 'Mood board', desc: 'Turn a vibe into a creative brief' },
-            { href: '/tools', icon: '✦', title: 'More tools', desc: 'Shot of the day, contracts, and more' },
+            { href: '/tools', icon: '✦', title: 'More tools', desc: 'Contracts, planners, and more coming' },
           ].map(tool => (
             <a key={tool.href} href={tool.href} style={{ textDecoration: 'none' }}>
               <div style={{ background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '20px' }}>
@@ -222,18 +306,23 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* What is Nodable */}
+      {/* CTA */}
       <section style={{ maxWidth: '680px', margin: '0 auto', padding: '0 24px 80px' }}>
         <div style={{ background: 'rgba(255,229,0,0.04)', border: '0.5px solid rgba(255,229,0,0.12)', borderRadius: '20px', padding: '48px 40px', textAlign: 'center' }}>
           <h2 style={{ color: '#fff', fontSize: '28px', fontWeight: '700', letterSpacing: '-0.03em', margin: '0 0 16px' }}>Built by a creator.<br />For creators.</h2>
           <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '15px', lineHeight: '1.8', maxWidth: '460px', margin: '0 auto 32px' }}>
-            Nodable is where sports and events videographers come to sharpen their craft, get paid properly, and build a reputation that actually means something. No fluff. No algorithm. Just standards.
+            Nodable exists because the tools creators need — and the community they deserve — didn't. No algorithm deciding your worth. No ads in your face. Just a platform that takes your craft as seriously as you do.
           </p>
           {!currentUser && (
-            <button onClick={() => setShowModal(true)}
-              style={{ background: '#FFE500', color: '#000', fontSize: '14px', fontWeight: '700', padding: '13px 32px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter), sans-serif' }}>
-              Join the waitlist
-            </button>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' as const }}>
+              <button onClick={() => setShowModal(true)}
+                style={{ background: '#FFE500', color: '#000', fontSize: '14px', fontWeight: '700', padding: '13px 32px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter), sans-serif' }}>
+                Join the waitlist
+              </button>
+              <a href="/creators" style={{ background: 'transparent', color: 'rgba(255,255,255,0.4)', fontSize: '14px', padding: '13px 32px', borderRadius: '10px', border: '0.5px solid rgba(255,255,255,0.12)', textDecoration: 'none' }}>
+                Meet the creators
+              </a>
+            </div>
           )}
         </div>
       </section>
