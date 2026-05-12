@@ -6,10 +6,8 @@ export async function GET() {
   const cookieStore = await cookies()
   const sessionId = cookieStore.get('nodable_session')?.value
   if (!sessionId) return NextResponse.json({ user: null })
-
   const { data: session } = await supabase.from('sessions').select('*').eq('id', sessionId).gt('expires_at', new Date().toISOString()).single()
   if (!session) return NextResponse.json({ user: null })
-
-  const { data: user } = await supabase.from('users').select('id, email, username, real_name, bio, camera_brand, profile_picture_url, age, location, open_for_work, theme_color, crowns, nodes, instagram, is_verified, created_at').eq('id', session.user_id).single()
+  const { data: user } = await supabase.from('users').select('id, email, username, real_name, bio, camera_brand, profile_picture_url, age, location, open_for_work, theme_color, crowns, nodes, instagram, is_verified, specialties, member_number, created_at').eq('id', session.user_id).single()
   return NextResponse.json({ user: user || null })
 }

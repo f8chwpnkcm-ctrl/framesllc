@@ -4,12 +4,25 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 
 const themeColors: Record<string, string> = {
-  yellow: '#FFE500',
-  blue: '#3B82F6',
-  red: '#EF4444',
-  green: '#22C55E',
-  purple: '#A855F7',
-  white: '#FFFFFF',
+  yellow: '#FFE500', blue: '#3B82F6', red: '#EF4444',
+  green: '#22C55E', purple: '#A855F7', white: '#FFFFFF',
+}
+
+function getCompletionScore(user: any) {
+  const fields = [
+    { key: 'profile_picture_url', label: 'Profile photo', nodes: 10 },
+    { key: 'real_name', label: 'Real name', nodes: 5 },
+    { key: 'bio', label: 'Bio', nodes: 10 },
+    { key: 'location', label: 'Location', nodes: 5 },
+    { key: 'camera_brand', label: 'Camera brand', nodes: 5 },
+    { key: 'instagram', label: 'Instagram', nodes: 5 },
+    { key: 'specialties', label: 'Specialties', nodes: 10, check: (v: any) => v && v.length > 0 },
+  ]
+  const completed = fields.filter(f => f.check ? f.check(user[f.key]) : !!user[f.key])
+  const total = fields.reduce((sum, f) => sum + f.nodes, 0)
+  const earned = completed.reduce((sum, f) => sum + f.nodes, 0)
+  const missing = fields.filter(f => !(f.check ? f.check(user[f.key]) : !!user[f.key]))
+  return { percent: Math.round((completed.length / fields.length) * 100), earned, total, missing }
 }
 
 export default function ProfilePage() {
@@ -22,19 +35,14 @@ export default function ProfilePage() {
   const [invoices, setInvoices] = useState<any[]>([])
   const [moodBoards, setMoodBoards] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [showCompletion, setShowCompletion] = useState(false)
 
   useEffect(() => {
     const load = async () => {
-      const [meRes, profileRes] = await Promise.all([
-        fetch('/api/auth/me'),
-        fetch(`/api/users/${username}`)
-      ])
+      const [meRes, profileRes] = await Promise.all([fetch('/api/auth/me'), fetch(`/api/users/${username}`)])
       const meData = await meRes.json()
       setCurrentUser(meData.user)
-      if (profileRes.ok) {
-        const profileData = await profileRes.json()
-        setUser(profileData.user)
-      }
+      if (profileRes.ok) { const profileData = await profileRes.json(); setUser(profileData.user) }
       setLoading(false)
     }
     load()
@@ -70,8 +78,9 @@ export default function ProfilePage() {
 
   const isOwner = currentUser?.username === username
   const accent = themeColors[user.theme_color] || '#FFE500'
+  const completion = isOwner ? getCompletionScore(user) : null
 
-  const SectionHeader = ({ title, count, newHref, viewHref }: { title: string, count: number, newHref: string, viewHref?: string }) => (
+  const SectionHeader = ({ title, count, newHref, viewHref }: any) => (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
       <h2 style={{ color: '#fff', fontSize: '16px', fontWeight: '700', margin: 0 }}>{title} {count > 0 && <span style={{ color: 'rgba(255,255,255,0.3)', fontWeight: '400', fontSize: '14px' }}>({count})</span>}</h2>
       <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
@@ -81,14 +90,14 @@ export default function ProfilePage() {
     </div>
   )
 
-  const EmptyState = ({ label, href }: { label: string, href: string }) => (
+  const EmptyState = ({ label, href }: any) => (
     <div style={{ background: 'rgba(255,255,255,0.02)', border: '0.5px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '28px', textAlign: 'center' }}>
       <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '13px', marginBottom: '12px' }}>Nothing saved yet</div>
       <a href={href} style={{ color: accent, fontSize: '13px', fontWeight: '700', textDecoration: 'none', background: `${accent}15`, padding: '8px 18px', borderRadius: '8px', border: `0.5px solid ${accent}30` }}>{label}</a>
     </div>
   )
 
-  const ListItem = ({ title, subtitle, href }: { title: string, subtitle: string, href: string }) => (
+  const ListItem = ({ title, subtitle, href }: any) => (
     <a href={href} style={{ textDecoration: 'none' }}>
       <div style={{ background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
@@ -133,33 +142,39 @@ export default function ProfilePage() {
               <h1 style={{ color: '#fff', fontSize: '22px', fontWeight: '700', letterSpacing: '-0.02em', margin: 0 }}>@{user.username}</h1>
               {user.is_verified && (
                 <span title="Verified" style={{ background: accent, borderRadius: '50%', width: '20px', height: '20px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                    <path d="M2 5l2 2 4-4" stroke="#000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2 2 4-4" stroke="#000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 </span>
               )}
               {user.open_for_work && (
                 <span style={{ background: `${accent}20`, color: accent, fontSize: '11px', fontWeight: '600', padding: '3px 10px', borderRadius: '20px', border: `0.5px solid ${accent}40` }}>Open for work</span>
               )}
             </div>
-            {user.real_name && <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px', marginBottom: '8px' }}>{user.real_name}</div>}
+            {user.real_name && <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px', marginBottom: '6px' }}>{user.real_name}</div>}
+            {user.member_number && (
+              <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: '11px', marginBottom: '8px', fontFamily: 'monospace' }}>Nodable #{user.member_number}</div>
+            )}
             <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' as const, alignItems: 'center' }}>
               {user.location && <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: '13px' }}>📍 {user.location}</span>}
               {user.camera_brand && <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: '13px' }}>📷 {user.camera_brand.charAt(0).toUpperCase() + user.camera_brand.slice(1)}</span>}
               {user.instagram && (
                 <a href={`https://instagram.com/${user.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer"
                   style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '5px 12px', textDecoration: 'none', color: 'rgba(255,255,255,0.6)', fontSize: '12px', fontWeight: '600' }}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
-                    <rect x="2" y="2" width="20" height="20" rx="5" stroke="rgba(255,255,255,0.6)" strokeWidth="2"/>
-                    <circle cx="12" cy="12" r="4" stroke="rgba(255,255,255,0.6)" strokeWidth="2"/>
-                    <circle cx="17.5" cy="6.5" r="1" fill="rgba(255,255,255,0.6)"/>
-                  </svg>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="5" stroke="rgba(255,255,255,0.6)" strokeWidth="2"/><circle cx="12" cy="12" r="4" stroke="rgba(255,255,255,0.6)" strokeWidth="2"/><circle cx="17.5" cy="6.5" r="1" fill="rgba(255,255,255,0.6)"/></svg>
                   @{user.instagram.replace('@', '')}
                 </a>
               )}
             </div>
           </div>
         </div>
+
+        {/* Specialties */}
+        {user.specialties && user.specialties.length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: '6px', marginBottom: '20px' }}>
+            {user.specialties.map((s: string) => (
+              <span key={s} style={{ background: `${accent}10`, color: accent, fontSize: '11px', fontWeight: '600', padding: '4px 10px', borderRadius: '20px', border: `0.5px solid ${accent}25` }}>{s}</span>
+            ))}
+          </div>
+        )}
 
         {/* Edit profile */}
         {isOwner && (
@@ -172,6 +187,30 @@ export default function ProfilePage() {
 
         {/* Bio */}
         {user.bio && <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '15px', lineHeight: '1.7', marginBottom: '32px' }}>{user.bio}</p>}
+
+        {/* Profile completion — owner only */}
+        {isOwner && completion && completion.percent < 100 && (
+          <div style={{ background: `${accent}08`, border: `0.5px solid ${accent}20`, borderRadius: '12px', padding: '16px 20px', marginBottom: '32px', cursor: 'pointer' }} onClick={() => setShowCompletion(v => !v)}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+              <div style={{ color: '#fff', fontSize: '13px', fontWeight: '700' }}>Profile {completion.percent}% complete</div>
+              <div style={{ color: accent, fontSize: '12px', fontWeight: '600' }}>+{completion.total - completion.earned} Nodes available</div>
+            </div>
+            <div style={{ height: '4px', background: 'rgba(255,255,255,0.08)', borderRadius: '2px' }}>
+              <div style={{ height: '100%', background: `linear-gradient(90deg, ${accent}, ${accent}aa)`, borderRadius: '2px', width: `${completion.percent}%`, transition: 'width 0.3s' }} />
+            </div>
+            {showCompletion && (
+              <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {completion.missing.map((f: any) => (
+                  <div key={f.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px' }}>Add {f.label}</span>
+                    <span style={{ color: accent, fontSize: '11px', fontWeight: '600' }}>+{f.nodes} Nodes</span>
+                  </div>
+                ))}
+                <a href={`/u/${username}/edit`} style={{ color: accent, fontSize: '12px', fontWeight: '700', textDecoration: 'none', marginTop: '4px' }}>Complete your profile →</a>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Stats */}
         <div style={{ display: 'flex', gap: '16px', marginBottom: '48px' }}>
@@ -191,61 +230,42 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Owner only sections */}
+        {/* Owner sections */}
         {isOwner && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
-
-            {/* Shot lists */}
             <div style={{ paddingTop: '32px', borderTop: '0.5px solid rgba(255,255,255,0.08)' }}>
               <SectionHeader title="Shot lists" count={shotLists.length} newHref="/tools/shot-list" viewHref={`/u/${username}/shot-lists`} />
-              {shotLists.length === 0 ? (
-                <EmptyState label="Generate your first one" href="/tools/shot-list" />
-              ) : (
+              {shotLists.length === 0 ? <EmptyState label="Generate your first one" href="/tools/shot-list" /> : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {shotLists.slice(0, 3).map((list: any) => (
                     <ListItem key={list.id} title={list.title} subtitle={`${list.media_type} · ${list.event_type} · ${new Date(list.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`} href={`/u/${username}/shot-lists`} />
                   ))}
-                  {shotLists.length > 3 && (
-                    <a href={`/u/${username}/shot-lists`} style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: '13px', textDecoration: 'none', padding: '10px' }}>+{shotLists.length - 3} more</a>
-                  )}
+                  {shotLists.length > 3 && <a href={`/u/${username}/shot-lists`} style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: '13px', textDecoration: 'none', padding: '10px' }}>+{shotLists.length - 3} more</a>}
                 </div>
               )}
             </div>
-
-            {/* Mood boards */}
             <div>
               <SectionHeader title="Mood boards" count={moodBoards.length} newHref="/tools/mood-board" />
-              {moodBoards.length === 0 ? (
-                <EmptyState label="Create your first mood board" href="/tools/mood-board" />
-              ) : (
+              {moodBoards.length === 0 ? <EmptyState label="Create your first mood board" href="/tools/mood-board" /> : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {moodBoards.slice(0, 3).map((board: any) => (
                     <ListItem key={board.id} title={board.title} subtitle={`${board.vibe.slice(0, 60)}${board.vibe.length > 60 ? '...' : ''}`} href="/tools/mood-board" />
                   ))}
-                  {moodBoards.length > 3 && (
-                    <a href="/tools/mood-board" style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: '13px', textDecoration: 'none', padding: '10px' }}>+{moodBoards.length - 3} more</a>
-                  )}
+                  {moodBoards.length > 3 && <a href="/tools/mood-board" style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: '13px', textDecoration: 'none', padding: '10px' }}>+{moodBoards.length - 3} more</a>}
                 </div>
               )}
             </div>
-
-            {/* Invoices */}
             <div>
               <SectionHeader title="Invoices" count={invoices.length} newHref="/tools/invoice" />
-              {invoices.length === 0 ? (
-                <EmptyState label="Create your first invoice" href="/tools/invoice" />
-              ) : (
+              {invoices.length === 0 ? <EmptyState label="Create your first invoice" href="/tools/invoice" /> : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {invoices.slice(0, 3).map((inv: any) => (
                     <ListItem key={inv.id} title={`${inv.invoice_number} — ${inv.client_name}`} subtitle={`$${inv.total?.toFixed(2)} · ${new Date(inv.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`} href="/tools/invoice" />
                   ))}
-                  {invoices.length > 3 && (
-                    <a href="/tools/invoice" style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: '13px', textDecoration: 'none', padding: '10px' }}>+{invoices.length - 3} more</a>
-                  )}
+                  {invoices.length > 3 && <a href="/tools/invoice" style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: '13px', textDecoration: 'none', padding: '10px' }}>+{invoices.length - 3} more</a>}
                 </div>
               )}
             </div>
-
           </div>
         )}
       </div>
