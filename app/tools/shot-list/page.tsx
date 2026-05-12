@@ -1,11 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRequireAuth } from '../../hooks/useRequireAuth'
 
 const STEPS = ['media', 'event', 'details', 'gear', 'duration']
 
 export default function ShotListPage() {
-  const [user, setUser] = useState<any>(null)
+  const { user, loading: authLoading } = useRequireAuth()
   const [stepIndex, setStepIndex] = useState(0)
   const [mode, setMode] = useState<'form' | 'generating' | 'result'>('form')
   const [savedLists, setSavedLists] = useState<any[]>([])
@@ -13,52 +14,34 @@ export default function ShotListPage() {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [form, setForm] = useState({
-    media_type: '',
-    event_type: '',
-    custom_event: '',
-    details: '',
-    camera_body: '',
-    lenses: '',
-    other_gear: '',
-    duration: '',
-    custom_duration: '',
+    media_type: '', event_type: '', custom_event: '', details: '',
+    camera_body: '', lenses: '', other_gear: '', duration: '', custom_duration: '',
   })
 
   useEffect(() => {
-    fetch('/api/auth/me').then(r => r.json()).then(d => {
-      setUser(d.user)
-      if (d.user) {
-        fetch('/api/shot-lists').then(r => r.json()).then(data => {
-          if (data.lists) setSavedLists(data.lists)
-        })
-      }
-    })
-  }, [])
+    if (user) {
+      fetch('/api/shot-lists').then(r => r.json()).then(data => {
+        if (data.lists) setSavedLists(data.lists)
+      })
+    }
+  }, [user])
 
   const update = (key: string, value: string) => setForm(f => ({ ...f, [key]: value }))
 
   const eventTypes = [
-    { label: 'Wedding', emoji: '💍' },
-    { label: 'Sports', emoji: '⚽' },
-    { label: 'Concert', emoji: '🎸' },
-    { label: 'Corporate', emoji: '💼' },
-    { label: 'Birthday', emoji: '🎂' },
-    { label: 'Graduation', emoji: '🎓' },
-    { label: 'Fashion', emoji: '👗' },
-    { label: 'Real Estate', emoji: '🏠' },
-    { label: 'Documentary', emoji: '🎬' },
-    { label: 'Other', emoji: '✦' },
+    { label: 'Wedding', emoji: '💍' }, { label: 'Sports', emoji: '⚽' },
+    { label: 'Concert', emoji: '🎸' }, { label: 'Corporate', emoji: '💼' },
+    { label: 'Birthday', emoji: '🎂' }, { label: 'Graduation', emoji: '🎓' },
+    { label: 'Fashion', emoji: '👗' }, { label: 'Real Estate', emoji: '🏠' },
+    { label: 'Documentary', emoji: '🎬' }, { label: 'Other', emoji: '✦' },
   ]
 
   const durations = ['Under 1 hour', '1–2 hours', '2–4 hours', 'Half day', 'Full day', 'Multi-day']
 
   const canAdvance = () => {
-    const step = STEPS[stepIndex]
-    if (step === 'media') return !!form.media_type
-    if (step === 'event') return !!form.event_type && (form.event_type !== 'Other' || !!form.custom_event)
-    if (step === 'details') return true
-    if (step === 'gear') return true
-    if (step === 'duration') return !!form.duration && (form.duration !== 'custom' || !!form.custom_duration)
+    if (STEPS[stepIndex] === 'media') return !!form.media_type
+    if (STEPS[stepIndex] === 'event') return !!form.event_type && (form.event_type !== 'Other' || !!form.custom_event)
+    if (STEPS[stepIndex] === 'duration') return !!form.duration && (form.duration !== 'custom' || !!form.custom_duration)
     return true
   }
 
@@ -66,20 +49,11 @@ export default function ShotListPage() {
     setMode('generating')
     const eventLabel = form.event_type === 'Other' ? form.custom_event : form.event_type
     const durationStr = form.duration === 'custom' ? form.custom_duration : form.duration
-
     try {
       const res = await fetch('/api/generate-shot-list', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          media_type: form.media_type,
-          event_type: eventLabel,
-          details: form.details,
-          camera_body: form.camera_body,
-          lenses: form.lenses,
-          other_gear: form.other_gear,
-          duration: durationStr,
-        })
+        body: JSON.stringify({ media_type: form.media_type, event_type: eventLabel, details: form.details, camera_body: form.camera_body, lenses: form.lenses, other_gear: form.other_gear, duration: durationStr })
       })
       const data = await res.json()
       if (!data.result) throw new Error('No result')
@@ -101,31 +75,20 @@ export default function ShotListPage() {
     const res = await fetch('/api/shot-lists', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        title: currentList.title,
-        media_type: form.media_type,
-        event_type: eventLabel,
-        details: form.details,
-        gear: gearParts.join(', '),
-        duration: durationStr,
-        content: currentList,
-      })
+      body: JSON.stringify({ title: currentList.title, media_type: form.media_type, event_type: eventLabel, details: form.details, gear: gearParts.join(', '), duration: durationStr, content: currentList })
     })
-    if (res.ok) {
-      setSaved(true)
-      const data = await res.json()
-      setSavedLists(prev => [data.list, ...prev])
-    }
+    if (res.ok) { setSaved(true); const data = await res.json(); setSavedLists(prev => [data.list, ...prev]) }
     setSaving(false)
   }
 
-  const inputStyle = {
-    width: '100%', background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.12)',
-    borderRadius: '10px', padding: '14px 16px', fontSize: '15px', color: '#fff', outline: 'none',
-    fontFamily: 'var(--font-inter), sans-serif', boxSizing: 'border-box' as const,
-  }
-
+  const inputStyle = { width: '100%', background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.12)', borderRadius: '10px', padding: '14px 16px', fontSize: '15px', color: '#fff', outline: 'none', fontFamily: 'var(--font-inter), sans-serif', boxSizing: 'border-box' as const }
   const progress = (stepIndex / STEPS.length) * 100
+
+  if (authLoading) return (
+    <main style={{ minHeight: '100vh', background: 'linear-gradient(to bottom, #0a0a0a, #111827)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-inter), sans-serif' }}>
+      <div style={{ color: 'rgba(255,255,255,0.3)' }}>Loading...</div>
+    </main>
+  )
 
   return (
     <main style={{ minHeight: '100vh', background: 'linear-gradient(to bottom, #0a0a0a, #111827)', fontFamily: 'var(--font-inter), sans-serif' }}>
@@ -138,16 +101,11 @@ export default function ShotListPage() {
         </a>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <a href="/tools" style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', textDecoration: 'none' }}>← Tools</a>
-          {user ? (
-            <a href={`/u/${user.username}`} style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', textDecoration: 'none' }}>@{user.username}</a>
-          ) : (
-            <a href="/login" style={{ background: '#FFE500', color: '#000', fontSize: '12px', fontWeight: '700', padding: '8px 18px', borderRadius: '6px', textDecoration: 'none' }}>Log in</a>
-          )}
+          {user && <a href={`/u/${user.username}`} style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', textDecoration: 'none' }}>@{user.username}</a>}
         </div>
       </nav>
 
       <div style={{ maxWidth: '640px', margin: '0 auto', padding: '60px 24px' }}>
-
         {mode === 'form' && (
           <>
             <div style={{ marginBottom: '48px' }}>
@@ -201,7 +159,7 @@ export default function ShotListPage() {
             {STEPS[stepIndex] === 'details' && (
               <div>
                 <h2 style={{ color: '#fff', fontSize: '28px', fontWeight: '700', letterSpacing: '-0.02em', margin: '0 0 8px' }}>Tell us about the shoot.</h2>
-                <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '15px', margin: '0 0 40px' }}>Include things like time of day, venue, weather, key moments, or anything specific you want captured.</p>
+                <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '15px', margin: '0 0 40px' }}>Include time of day, venue, weather, key moments, or anything specific you want captured.</p>
                 <textarea style={{ ...inputStyle, resize: 'none', height: '160px', lineHeight: '1.6' }}
                   placeholder="e.g. Outdoor soccer game at golden hour. Home team in yellow jerseys. Need to capture goals, saves, celebrations, and team huddles. Sideline access only."
                   value={form.details} onChange={e => update('details', e.target.value)} />
@@ -212,7 +170,7 @@ export default function ShotListPage() {
             {STEPS[stepIndex] === 'gear' && (
               <div>
                 <h2 style={{ color: '#fff', fontSize: '28px', fontWeight: '700', letterSpacing: '-0.02em', margin: '0 0 8px' }}>What gear are you bringing?</h2>
-                <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '15px', margin: '0 0 40px' }}>This helps tailor lens recommendations and shot techniques to your setup.</p>
+                <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '15px', margin: '0 0 40px' }}>Helps tailor lens recommendations and shot techniques to your setup.</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                   <div>
                     <label style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px', fontWeight: '600', letterSpacing: '0.04em', textTransform: 'uppercase' as const, marginBottom: '8px', display: 'block' }}>Camera body</label>
@@ -227,14 +185,14 @@ export default function ShotListPage() {
                     <input style={inputStyle} type="text" placeholder="e.g. Gimbal, drone, flash, ND filters" value={form.other_gear} onChange={e => update('other_gear', e.target.value)} />
                   </div>
                 </div>
-                <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: '12px', marginTop: '12px' }}>All optional — skip if you're not sure yet.</div>
+                <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: '12px', marginTop: '12px' }}>All optional — skip if not sure yet.</div>
               </div>
             )}
 
             {STEPS[stepIndex] === 'duration' && (
               <div>
                 <h2 style={{ color: '#fff', fontSize: '28px', fontWeight: '700', letterSpacing: '-0.02em', margin: '0 0 8px' }}>How long is the shoot?</h2>
-                <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '15px', margin: '0 0 40px' }}>This helps pace your shot list and prioritize what matters most.</p>
+                <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '15px', margin: '0 0 40px' }}>Helps pace your shot list and prioritize what matters most.</p>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
                   {durations.map(d => (
                     <button key={d} onClick={() => update('duration', d)}
@@ -273,7 +231,7 @@ export default function ShotListPage() {
               )}
             </div>
 
-            {user && savedLists.length > 0 && stepIndex === 0 && (
+            {savedLists.length > 0 && stepIndex === 0 && (
               <div style={{ marginTop: '64px', paddingTop: '48px', borderTop: '0.5px solid rgba(255,255,255,0.08)' }}>
                 <h2 style={{ color: '#fff', fontSize: '18px', fontWeight: '700', margin: '0 0 20px' }}>Your saved shot lists</h2>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -318,14 +276,10 @@ export default function ShotListPage() {
                   style={{ padding: '10px 18px', borderRadius: '8px', border: '0.5px solid rgba(255,255,255,0.12)', background: 'transparent', color: 'rgba(255,255,255,0.5)', fontSize: '13px', cursor: 'pointer', fontFamily: 'var(--font-inter), sans-serif' }}>
                   New list
                 </button>
-                {user ? (
-                  <button onClick={handleSave} disabled={saving || saved}
-                    style={{ padding: '10px 18px', borderRadius: '8px', border: saved ? '0.5px solid rgba(34,197,94,0.3)' : 'none', background: saved ? 'rgba(34,197,94,0.15)' : '#FFE500', color: saved ? '#22C55E' : '#000', fontSize: '13px', fontWeight: '700', cursor: saved ? 'default' : 'pointer', fontFamily: 'var(--font-inter), sans-serif' }}>
-                    {saving ? 'Saving...' : saved ? '✓ Saved' : 'Save to profile'}
-                  </button>
-                ) : (
-                  <a href="/login" style={{ padding: '10px 18px', borderRadius: '8px', background: '#FFE500', color: '#000', fontSize: '13px', fontWeight: '700', textDecoration: 'none' }}>Log in to save</a>
-                )}
+                <button onClick={handleSave} disabled={saving || saved}
+                  style={{ padding: '10px 18px', borderRadius: '8px', border: saved ? '0.5px solid rgba(34,197,94,0.3)' : 'none', background: saved ? 'rgba(34,197,94,0.15)' : '#FFE500', color: saved ? '#22C55E' : '#000', fontSize: '13px', fontWeight: '700', cursor: saved ? 'default' : 'pointer', fontFamily: 'var(--font-inter), sans-serif' }}>
+                  {saving ? 'Saving...' : saved ? '✓ Saved' : 'Save to profile'}
+                </button>
               </div>
             </div>
 
