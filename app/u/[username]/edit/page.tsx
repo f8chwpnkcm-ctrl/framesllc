@@ -9,6 +9,12 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
+const ALL_SPECIALTIES = [
+  'Weddings', 'Sports', 'Concerts', 'Corporate', 'Portrait',
+  'Fashion', 'Real Estate', 'Documentary', 'Street', 'Nature',
+  'Events', 'Music Videos', 'Aerial/Drone', 'Automotive', 'Food'
+]
+
 export default function EditProfilePage() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
@@ -20,14 +26,9 @@ export default function EditProfilePage() {
   const [userId, setUserId] = useState<number | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [form, setForm] = useState({
-    real_name: '',
-    bio: '',
-    camera_brand: '',
-    age: '',
-    location: '',
-    open_for_work: false,
-    theme_color: 'yellow',
-    instagram: '',
+    real_name: '', bio: '', camera_brand: '', age: '', location: '',
+    open_for_work: false, theme_color: 'yellow', instagram: '',
+    specialties: [] as string[],
   })
 
   useEffect(() => {
@@ -44,6 +45,7 @@ export default function EditProfilePage() {
         open_for_work: d.user.open_for_work || false,
         theme_color: d.user.theme_color || 'yellow',
         instagram: d.user.instagram || '',
+        specialties: d.user.specialties || [],
       })
       setLoading(false)
     })
@@ -61,13 +63,18 @@ export default function EditProfilePage() {
     if (uploadError) { setError(uploadError.message); setUploading(false); return }
     const { data } = supabase.storage.from('avatars').getPublicUrl(path)
     const url = `${data.publicUrl}?t=${Date.now()}`
-    await fetch('/api/auth/profile', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ profile_picture_url: url }),
-    })
+    await fetch('/api/auth/profile', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ profile_picture_url: url }) })
     setAvatarUrl(url)
     setUploading(false)
+  }
+
+  const toggleSpecialty = (s: string) => {
+    setForm(f => ({
+      ...f,
+      specialties: f.specialties.includes(s)
+        ? f.specialties.filter(x => x !== s)
+        : [...f.specialties, s]
+    }))
   }
 
   const update = (key: string, value: any) => setForm(f => ({ ...f, [key]: value }))
@@ -82,39 +89,21 @@ export default function EditProfilePage() {
         body: JSON.stringify({ ...form, age: form.age ? parseInt(form.age) : null }),
       })
       const data = await res.json()
-      if (res.ok) {
-        setSuccess(true)
-        setTimeout(() => router.push(`/u/${data.username}`), 1000)
-      } else {
-        setError(data.error || 'Something went wrong')
-      }
-    } catch {
-      setError('Something went wrong')
-    }
+      if (res.ok) { setSuccess(true); setTimeout(() => router.push(`/u/${data.username}`), 1000) }
+      else { setError(data.error || 'Something went wrong') }
+    } catch { setError('Something went wrong') }
     setSaving(false)
   }
 
   const themes = [
-    { id: 'yellow', color: '#FFE500' },
-    { id: 'blue', color: '#3B82F6' },
-    { id: 'red', color: '#EF4444' },
-    { id: 'green', color: '#22C55E' },
-    { id: 'purple', color: '#A855F7' },
-    { id: 'white', color: '#FFFFFF' },
+    { id: 'yellow', color: '#FFE500' }, { id: 'blue', color: '#3B82F6' },
+    { id: 'red', color: '#EF4444' }, { id: 'green', color: '#22C55E' },
+    { id: 'purple', color: '#A855F7' }, { id: 'white', color: '#FFFFFF' },
   ]
-
   const cameras = ['Sony', 'Canon', 'Nikon', 'Fuji', 'Panasonic', 'Blackmagic', 'DJI', 'Other']
 
-  const inputStyle = {
-    width: '100%', background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.12)',
-    borderRadius: '10px', padding: '14px 16px', fontSize: '14px', color: '#fff', outline: 'none',
-    fontFamily: 'var(--font-inter), sans-serif', boxSizing: 'border-box' as const,
-  }
-
-  const labelStyle = {
-    color: 'rgba(255,255,255,0.5)', fontSize: '12px', fontWeight: '600' as const,
-    letterSpacing: '0.04em', textTransform: 'uppercase' as const, marginBottom: '8px', display: 'block',
-  }
+  const inputStyle = { width: '100%', background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.12)', borderRadius: '10px', padding: '14px 16px', fontSize: '14px', color: '#fff', outline: 'none', fontFamily: 'var(--font-inter), sans-serif', boxSizing: 'border-box' as const }
+  const labelStyle = { color: 'rgba(255,255,255,0.5)', fontSize: '12px', fontWeight: '600' as const, letterSpacing: '0.04em', textTransform: 'uppercase' as const, marginBottom: '8px', display: 'block' }
 
   if (loading) return (
     <main style={{ minHeight: '100vh', background: 'linear-gradient(to bottom, #0a0a0a, #111827)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-inter), sans-serif' }}>
@@ -139,15 +128,12 @@ export default function EditProfilePage() {
         <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '14px', margin: '0 0 40px' }}>Update your public profile information.</p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+
           <div>
             <label style={labelStyle}>Profile picture</label>
             <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
               <div style={{ width: '72px', height: '72px', borderRadius: '50%', background: 'rgba(255,255,255,0.06)', border: '2px solid rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
-                {avatarUrl ? (
-                  <img src={avatarUrl} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : (
-                  <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '24px', fontWeight: '700' }}>?</span>
-                )}
+                {avatarUrl ? <img src={avatarUrl} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '24px', fontWeight: '700' }}>?</span>}
               </div>
               <div>
                 <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarUpload} style={{ display: 'none' }} />
@@ -173,6 +159,18 @@ export default function EditProfilePage() {
           <div>
             <label style={labelStyle}>Bio <span style={{ color: 'rgba(255,255,255,0.2)', fontWeight: '400', textTransform: 'none', letterSpacing: 0 }}>{form.bio.length}/300</span></label>
             <textarea style={{ ...inputStyle, resize: 'none', height: '80px' }} placeholder="Sports & events videographer..." value={form.bio} maxLength={300} onChange={e => update('bio', e.target.value)} />
+          </div>
+
+          <div>
+            <label style={labelStyle}>Specialties <span style={{ color: 'rgba(255,255,255,0.2)', fontWeight: '400', textTransform: 'none', letterSpacing: 0 }}>{form.specialties.length} selected</span></label>
+            <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: '8px' }}>
+              {ALL_SPECIALTIES.map(s => (
+                <button key={s} onClick={() => toggleSpecialty(s)}
+                  style={{ padding: '7px 14px', borderRadius: '8px', border: `0.5px solid ${form.specialties.includes(s) ? '#FFE500' : 'rgba(255,255,255,0.12)'}`, background: form.specialties.includes(s) ? 'rgba(255,229,0,0.1)' : 'transparent', color: form.specialties.includes(s) ? '#FFE500' : 'rgba(255,255,255,0.5)', fontSize: '13px', cursor: 'pointer', fontFamily: 'var(--font-inter), sans-serif' }}>
+                  {s}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div>
