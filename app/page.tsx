@@ -8,7 +8,6 @@ const themeColors: Record<string, string> = {
   green: '#22C55E', purple: '#A855F7', white: '#FFFFFF',
 }
 
-// ── Animated node network background ──
 function NodeNetwork() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
@@ -23,54 +22,56 @@ function NodeNetwork() {
 
     const resize = () => {
       canvas.width = window.innerWidth
-      canvas.height = document.body.scrollHeight
-      initNodes()
+      canvas.height = window.innerHeight
     }
 
     const initNodes = () => {
-      const count = Math.floor((canvas.width * canvas.height) / 28000)
-      nodes = Array.from({ length: count }, () => ({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: (Math.random() - 0.5) * 0.3,
+      const count = Math.floor((window.innerWidth * window.innerHeight) / 22000)
+      nodes = Array.from({ length: Math.min(count, 60) }, () => ({
+        x: Math.random() * window.innerWidth,
+        y: Math.random() * window.innerHeight,
+        vx: (Math.random() - 0.5) * 0.25,
+        vy: (Math.random() - 0.5) * 0.25,
         pulse: Math.random() * Math.PI * 2,
-        pulseSpeed: 0.02 + Math.random() * 0.02,
+        pulseSpeed: 0.015 + Math.random() * 0.02,
       }))
     }
 
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
 
+      // Update positions
       nodes.forEach(n => {
         n.x += n.vx
         n.y += n.vy
         n.pulse += n.pulseSpeed
         if (n.x < 0 || n.x > canvas.width) n.vx *= -1
         if (n.y < 0 || n.y > canvas.height) n.vy *= -1
-
-        // Draw connections
-        nodes.forEach(m => {
-          const dx = n.x - m.x
-          const dy = n.y - m.y
-          const dist = Math.sqrt(dx * dx + dy * dy)
-          if (dist < 180) {
-            ctx.beginPath()
-            ctx.strokeStyle = `rgba(255, 229, 0, ${(1 - dist / 180) * 0.06})`
-            ctx.lineWidth = 0.5
-            ctx.moveTo(n.x, n.y)
-            ctx.lineTo(m.x, m.y)
-            ctx.stroke()
-          }
-        })
       })
 
-      // Draw nodes on top
+      // Draw lines
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x
+          const dy = nodes[i].y - nodes[j].y
+          const dist = Math.sqrt(dx * dx + dy * dy)
+          if (dist < 160) {
+            ctx.beginPath()
+            ctx.strokeStyle = `rgba(255,229,0,${(1 - dist / 160) * 0.08})`
+            ctx.lineWidth = 0.5
+            ctx.moveTo(nodes[i].x, nodes[i].y)
+            ctx.lineTo(nodes[j].x, nodes[j].y)
+            ctx.stroke()
+          }
+        }
+      }
+
+      // Draw nodes
       nodes.forEach(n => {
-        const alpha = 0.15 + Math.sin(n.pulse) * 0.1
+        const alpha = 0.12 + Math.sin(n.pulse) * 0.08
         ctx.beginPath()
-        ctx.arc(n.x, n.y, 1.5, 0, Math.PI * 2)
-        ctx.fillStyle = `rgba(255, 229, 0, ${alpha})`
+        ctx.arc(n.x, n.y, 1.8, 0, Math.PI * 2)
+        ctx.fillStyle = `rgba(255,229,0,${alpha})`
         ctx.fill()
       })
 
@@ -78,36 +79,65 @@ function NodeNetwork() {
     }
 
     resize()
+    initNodes()
     draw()
-    window.addEventListener('resize', resize)
+
+    window.addEventListener('resize', () => { resize(); initNodes() })
     return () => {
       cancelAnimationFrame(animFrame)
-      window.removeEventListener('resize', resize)
+      window.removeEventListener('resize', () => {})
     }
   }, [])
 
   return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        position: 'fixed',
-        top: 0, left: 0,
-        width: '100%',
-        height: '100%',
-        pointerEvents: 'none',
-        zIndex: 0,
-        opacity: 0.9,
-      }}
-    />
+    <canvas ref={canvasRef} style={{
+      position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+      pointerEvents: 'none', zIndex: 0,
+    }} />
   )
 }
 
-// ── Crown watermark ──
-function CrownWatermark({ opacity = 0.03, size = 400, right = -80, top = '50%' }: { opacity?: number; size?: number; right?: number; top?: string }) {
+// Repeating crown tile background
+const CROWN_SVG_PATH = "M767.96,1876.06c348.4-78.57,799.8-147.81,1327.87-147.54,525.29,27,974.51,69.24,1321.72,147.54,59.43-520.49,118.85-1040.98,178.28-1561.48-295.08,235.66-590.16,471.31-885.25,706.97-204.92-226.68-409.84-453.35-614.75-680.03-206.97,234.87-413.93,469.75-620.9,704.62-293.03-234.87-586.07-469.75-879.1-704.62,57.38,511.51,114.75,1023.03,172.13,1534.54Z"
+
+function CrownPattern() {
+  // Build an SVG pattern of repeated crowns
+  const crownW = 80
+  const crownH = 44
+  const gapX = 120
+  const gapY = 80
+  const cols = 20
+  const rows = 40
+
+  const crowns = []
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const x = c * gapX + (r % 2 === 0 ? 0 : gapX / 2)
+      const y = r * gapY
+      crowns.push({ x, y, key: `${r}-${c}` })
+    }
+  }
+
+  const totalW = cols * gapX + gapX
+  const totalH = rows * gapY + gapY
+
   return (
-    <div style={{ position: 'absolute', right, top, transform: 'translateY(-50%)', pointerEvents: 'none', zIndex: 0 }}>
-      <svg width={size} height={size * 0.55} viewBox="0 0 4191.67 2190.15" fill="none" style={{ opacity }}>
-        <path d="M767.96,1876.06c348.4-78.57,799.8-147.81,1327.87-147.54,525.29,27,974.51,69.24,1321.72,147.54,59.43-520.49,118.85-1040.98,178.28-1561.48-295.08,235.66-590.16,471.31-885.25,706.97-204.92-226.68-409.84-453.35-614.75-680.03-206.97,234.87-413.93,469.75-620.9,704.62-293.03-234.87-586.07-469.75-879.1-704.62,57.38,511.51,114.75,1023.03,172.13,1534.54Z" fill="#FFE500"/>
+    <div style={{
+      position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+      pointerEvents: 'none', zIndex: 0, overflow: 'hidden',
+    }}>
+      <svg
+        width={totalW} height={totalH}
+        viewBox={`0 0 ${totalW} ${totalH}`}
+        style={{ opacity: 0.028, position: 'absolute', top: '-5%', left: '-5%' }}
+      >
+        {crowns.map(({ x, y, key }) => (
+          <g key={key} transform={`translate(${x}, ${y})`}>
+            <svg width={crownW} height={crownH} viewBox="0 0 4191.67 2190.15">
+              <path d={CROWN_SVG_PATH} fill="#FFE500" />
+            </svg>
+          </g>
+        ))}
       </svg>
     </div>
   )
@@ -149,7 +179,7 @@ function WaitlistModal({ onClose }: { onClose: () => void }) {
               style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.12)', borderRadius: '10px', padding: '16px', fontSize: '15px', color: '#fff', outline: 'none', fontFamily: 'var(--font-inter), sans-serif', boxSizing: 'border-box' as const, marginBottom: '12px' }} />
             {message && <div style={{ color: 'rgba(255,100,100,0.8)', fontSize: '13px', marginBottom: '12px' }}>{message}</div>}
             <button onClick={handleSubmit} disabled={status === 'loading'}
-              style={{ width: '100%', background: '#FFE500', color: '#000', fontSize: '15px', fontWeight: '700', padding: '15px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter), sans-serif', letterSpacing: '-0.01em' }}>
+              style={{ width: '100%', background: '#FFE500', color: '#000', fontSize: '15px', fontWeight: '700', padding: '15px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter), sans-serif' }}>
               {status === 'loading' ? '...' : 'Join the waitlist'}
             </button>
           </>
@@ -183,14 +213,15 @@ export default function HomePage() {
 
   return (
     <main style={{ minHeight: '100vh', background: '#080808', fontFamily: 'var(--font-inter), sans-serif', overscrollBehavior: 'none', position: 'relative' as const }}>
+      <CrownPattern />
       <NodeNetwork />
       {showModal && <WaitlistModal onClose={() => setShowModal(false)} />}
+
       <div style={{ position: 'relative', zIndex: 1 }}>
         <Navbar onJoinWaitlist={() => setShowModal(true)} />
 
-        {/* ── HERO ── */}
-        <section style={{ maxWidth: '1000px', margin: '0 auto', padding: '120px 24px 100px', position: 'relative' as const, overflow: 'hidden' }}>
-          <CrownWatermark opacity={0.04} size={600} right={-120} top="50%" />
+        {/* HERO */}
+        <section style={{ maxWidth: '1000px', margin: '0 auto', padding: '120px 24px 100px' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,229,0,0.08)', border: '0.5px solid rgba(255,229,0,0.2)', padding: '6px 16px', borderRadius: '20px', marginBottom: '48px' }}>
             <div style={{ width: '6px', height: '6px', background: '#FFE500', borderRadius: '50%', animation: 'pulse 2s infinite' }} />
             <span style={{ color: '#FFE500', fontSize: '12px', fontWeight: '600', letterSpacing: '0.04em' }}>EARLY ACCESS OPEN</span>
@@ -224,7 +255,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── MARQUEE ── */}
+        {/* MARQUEE */}
         <div style={{ borderTop: '0.5px solid rgba(255,255,255,0.06)', borderBottom: '0.5px solid rgba(255,255,255,0.06)', padding: '14px 0', overflow: 'hidden' }}>
           <div style={{ display: 'flex', gap: '48px', animation: 'marquee 20s linear infinite', width: 'max-content' }}>
             {['Tools built for creators', 'Shot list generator', 'Invoice builder', 'Mood board creator', 'Drops feed', 'Creator network', 'Verified profiles', 'Earn your reputation', 'Tools built for creators', 'Shot list generator', 'Invoice builder', 'Mood board creator', 'Drops feed', 'Creator network'].map((item, i) => (
@@ -235,9 +266,8 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* ── WHAT IS NODABLE ── */}
-        <section style={{ maxWidth: '1000px', margin: '0 auto', padding: '120px 24px', position: 'relative' as const, overflow: 'hidden' }}>
-          <CrownWatermark opacity={0.025} size={500} right={-60} top="40%" />
+        {/* WHAT IS NODABLE */}
+        <section style={{ maxWidth: '1000px', margin: '0 auto', padding: '120px 24px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '80px', alignItems: 'center' }}>
             <div>
               <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '20px' }}>What is Nodable</div>
@@ -271,15 +301,9 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── NODES & CROWNS ── */}
-        <section style={{ background: 'rgba(13,13,13,0.95)', borderTop: '0.5px solid rgba(255,255,255,0.06)', borderBottom: '0.5px solid rgba(255,255,255,0.06)', padding: '120px 24px', position: 'relative' as const, overflow: 'hidden' }}>
-          {/* Big centered crown watermark for this section */}
-          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', pointerEvents: 'none', zIndex: 0 }}>
-            <svg width="800" height="440" viewBox="0 0 4191.67 2190.15" fill="none" style={{ opacity: 0.025 }}>
-              <path d="M767.96,1876.06c348.4-78.57,799.8-147.81,1327.87-147.54,525.29,27,974.51,69.24,1321.72,147.54,59.43-520.49,118.85-1040.98,178.28-1561.48-295.08,235.66-590.16,471.31-885.25,706.97-204.92-226.68-409.84-453.35-614.75-680.03-206.97,234.87-413.93,469.75-620.9,704.62-293.03-234.87-586.07-469.75-879.1-704.62,57.38,511.51,114.75,1023.03,172.13,1534.54Z" fill="#FFE500"/>
-            </svg>
-          </div>
-          <div style={{ maxWidth: '1000px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+        {/* NODES & CROWNS */}
+        <section style={{ background: 'rgba(13,13,13,0.92)', borderTop: '0.5px solid rgba(255,255,255,0.06)', borderBottom: '0.5px solid rgba(255,255,255,0.06)', padding: '120px 24px' }}>
+          <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
             <div style={{ textAlign: 'center', marginBottom: '72px' }}>
               <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '20px' }}>The economy</div>
               <h2 style={{ color: '#fff', fontSize: 'clamp(32px, 4vw, 52px)', fontWeight: '700', letterSpacing: '-0.03em', lineHeight: '1.08', margin: '0 auto 20px', maxWidth: '600px' }}>
@@ -290,11 +314,11 @@ export default function HomePage() {
               </p>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-              <div style={{ background: 'rgba(17,17,17,0.9)', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '20px', padding: '48px' }}>
+              <div style={{ background: 'rgba(17,17,17,0.95)', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '20px', padding: '48px' }}>
                 <div style={{ fontSize: '40px', fontWeight: '700', letterSpacing: '-0.03em', color: '#fff', marginBottom: '8px' }}>Nodes</div>
                 <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '13px', marginBottom: '28px', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Your reputation score</div>
                 <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '15px', lineHeight: '1.8', marginBottom: '32px' }}>
-                  Nodes represent your standing in the Nodable community. You can't buy them — you earn them through real contributions. Posts, reactions, collabs.
+                  Nodes represent your standing in the Nodable community. You can't buy them — you earn them through real contributions.
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '10px' }}>
                   {[['Post a Drop', '+2'], ['Someone Fires your Drop', '+1'], ['Someone Crowns your Drop', '+5'], ['Collab interest signal', '+2'], ['Complete your profile', 'up to +50']].map(([action, nodes]) => (
@@ -309,7 +333,7 @@ export default function HomePage() {
                 <div style={{ fontSize: '40px', fontWeight: '700', letterSpacing: '-0.03em', background: 'linear-gradient(90deg, #FFE500, #FFC200)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: '8px' }}>Crowns</div>
                 <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '13px', marginBottom: '28px', letterSpacing: '0.04em', textTransform: 'uppercase' }}>The Nodable currency</div>
                 <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '15px', lineHeight: '1.8', marginBottom: '32px' }}>
-                  Crowns are how you show real appreciation. Free to earn daily. Limited to spend. When you Crown someone's Drop, you're saying this is elite — and they earn Nodes for it.
+                  Crowns are how you show real appreciation. Free to earn daily. When you Crown someone's Drop, you're saying this is elite — and they earn Nodes for it.
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '10px' }}>
                   {[['+10 free on login daily', 'Just show up'], ['Crown Drops you love', '3 per day max'], ['Unlock platform features', 'Coming soon'], ['Support other creators', 'Always free']].map(([action, note]) => (
@@ -324,10 +348,9 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── LIVE DROPS ── */}
+        {/* LIVE DROPS */}
         {drops.length > 0 && (
-          <section style={{ maxWidth: '1000px', margin: '0 auto', padding: '120px 24px', position: 'relative' as const, overflow: 'hidden' }}>
-            <CrownWatermark opacity={0.02} size={400} right={-40} top="30%" />
+          <section style={{ maxWidth: '1000px', margin: '0 auto', padding: '120px 24px' }}>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '56px', gap: '24px', flexWrap: 'wrap' as const }}>
               <div>
                 <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '16px' }}>Live from the community</div>
@@ -335,11 +358,9 @@ export default function HomePage() {
                   What creators<br />are dropping.
                 </h2>
               </div>
-              <a href="/feed" style={{ color: '#FFE500', fontSize: '14px', fontWeight: '600', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
-                See the full feed →
-              </a>
+              <a href="/feed" style={{ color: '#FFE500', fontSize: '14px', fontWeight: '600', textDecoration: 'none', flexShrink: 0 }}>See the full feed →</a>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '2px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column' as const }}>
               {drops.map((drop: any) => {
                 const author = drop.users
                 const accent = themeColors[author?.theme_color] || '#FFE500'
@@ -376,11 +397,10 @@ export default function HomePage() {
           </section>
         )}
 
-        {/* ── CREATORS ── */}
+        {/* CREATORS */}
         {creators.length > 0 && (
-          <section style={{ background: 'rgba(13,13,13,0.95)', borderTop: '0.5px solid rgba(255,255,255,0.06)', padding: '120px 24px', position: 'relative' as const, overflow: 'hidden' }}>
-            <CrownWatermark opacity={0.025} size={450} right={-60} top="60%" />
-            <div style={{ maxWidth: '1000px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+          <section style={{ background: 'rgba(13,13,13,0.92)', borderTop: '0.5px solid rgba(255,255,255,0.06)', padding: '120px 24px' }}>
+            <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
               <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '56px', gap: '24px', flexWrap: 'wrap' as const }}>
                 <div>
                   <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '16px' }}>The network</div>
@@ -395,7 +415,7 @@ export default function HomePage() {
                   const accent = themeColors[creator.theme_color] || '#FFE500'
                   return (
                     <a key={creator.id} href={`/u/${creator.username}`} style={{ textDecoration: 'none' }}>
-                      <div style={{ background: 'rgba(17,17,17,0.9)', border: '0.5px solid rgba(255,255,255,0.07)', borderRadius: '16px', padding: '28px 20px', textAlign: 'center' as const }}>
+                      <div style={{ background: 'rgba(17,17,17,0.95)', border: '0.5px solid rgba(255,255,255,0.07)', borderRadius: '16px', padding: '28px 20px', textAlign: 'center' as const }}>
                         <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(255,255,255,0.06)', border: `2px solid ${accent}`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', margin: '0 auto 16px' }}>
                           {creator.profile_picture_url ? <img src={creator.profile_picture_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" /> : <span style={{ color: accent, fontSize: '24px', fontWeight: '700' }}>{creator.username[0].toUpperCase()}</span>}
                         </div>
@@ -414,9 +434,8 @@ export default function HomePage() {
           </section>
         )}
 
-        {/* ── TOOLS ── */}
-        <section style={{ maxWidth: '1000px', margin: '0 auto', padding: '120px 24px', position: 'relative' as const, overflow: 'hidden' }}>
-          <CrownWatermark opacity={0.02} size={380} right={-50} top="70%" />
+        {/* TOOLS */}
+        <section style={{ maxWidth: '1000px', margin: '0 auto', padding: '120px 24px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '80px', alignItems: 'start' }}>
             <div style={{ position: 'sticky' as const, top: '100px' }}>
               <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '20px' }}>The toolkit</div>
@@ -450,11 +469,18 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── FINAL CTA ── */}
+        {/* FINAL CTA */}
         <section style={{ background: '#FFE500', padding: '120px 24px', position: 'relative' as const, overflow: 'hidden' }}>
-          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', pointerEvents: 'none' }}>
-            <svg width="900" height="500" viewBox="0 0 4191.67 2190.15" fill="none" style={{ opacity: 0.07 }}>
-              <path d="M767.96,1876.06c348.4-78.57,799.8-147.81,1327.87-147.54,525.29,27,974.51,69.24,1321.72,147.54,59.43-520.49,118.85-1040.98,178.28-1561.48-295.08,235.66-590.16,471.31-885.25,706.97-204.92-226.68-409.84-453.35-614.75-680.03-206.97,234.87-413.93,469.75-620.9,704.62-293.03-234.87-586.07-469.75-879.1-704.62,57.38,511.51,114.75,1023.03,172.13,1534.54Z" fill="#000"/>
+          <div style={{ position: 'absolute', inset: 0, opacity: 0.06 }}>
+            <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <pattern id="crownCta" x="0" y="0" width="120" height="66" patternUnits="userSpaceOnUse">
+                  <svg width="80" height="44" viewBox="0 0 4191.67 2190.15">
+                    <path d={CROWN_SVG_PATH} fill="#000" />
+                  </svg>
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#crownCta)" />
             </svg>
           </div>
           <div style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center', position: 'relative', zIndex: 1 }}>
@@ -478,7 +504,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── FOOTER ── */}
+        {/* FOOTER */}
         <footer style={{ background: '#000', padding: '48px 24px' }}>
           <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' as const, gap: '16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
