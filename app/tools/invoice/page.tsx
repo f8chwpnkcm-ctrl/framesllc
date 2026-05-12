@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
+import { useRequireAuth } from '../../hooks/useRequireAuth'
 
 const STEPS = ['client', 'job', 'rate', 'extras', 'payment']
 
 export default function InvoicePage() {
-  const [user, setUser] = useState<any>(null)
+  const { user, loading: authLoading } = useRequireAuth()
   const [stepIndex, setStepIndex] = useState(0)
   const [mode, setMode] = useState<'form' | 'generating' | 'result'>('form')
   const [savedInvoices, setSavedInvoices] = useState<any[]>([])
@@ -14,28 +15,17 @@ export default function InvoicePage() {
   const [saved, setSaved] = useState(false)
   const [taxRate, setTaxRate] = useState(0)
   const [form, setForm] = useState({
-    client_name: '',
-    client_email: '',
-    job_description: '',
-    media_type: '',
-    event_type: '',
-    rate_type: 'flat',
-    rate_amount: '',
-    extras: '',
-    due_date: '',
-    payment_notes: '',
+    client_name: '', client_email: '', job_description: '', media_type: '',
+    event_type: '', rate_type: 'flat', rate_amount: '', extras: '', due_date: '', payment_notes: '',
   })
 
   useEffect(() => {
-    fetch('/api/auth/me').then(r => r.json()).then(d => {
-      setUser(d.user)
-      if (d.user) {
-        fetch('/api/invoices').then(r => r.json()).then(data => {
-          if (data.invoices) setSavedInvoices(data.invoices)
-        })
-      }
-    })
-  }, [])
+    if (user) {
+      fetch('/api/invoices').then(r => r.json()).then(data => {
+        if (data.invoices) setSavedInvoices(data.invoices)
+      })
+    }
+  }, [user])
 
   const update = (key: string, value: string) => setForm(f => ({ ...f, [key]: value }))
 
@@ -57,35 +47,14 @@ export default function InvoicePage() {
       const res = await fetch('/api/generate-invoice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          job_description: form.job_description,
-          rate_type: form.rate_type,
-          rate_amount: form.rate_amount,
-          extras: form.extras,
-          media_type: form.media_type,
-          event_type: form.event_type,
-        })
+        body: JSON.stringify({ job_description: form.job_description, rate_type: form.rate_type, rate_amount: form.rate_amount, extras: form.extras, media_type: form.media_type, event_type: form.event_type })
       })
       const data = await res.json()
       if (!data.line_items) throw new Error('No line items')
-
       const subtotal = data.line_items.reduce((sum: number, item: any) => sum + item.amount, 0)
       const tax = subtotal * (taxRate / 100)
       const total = subtotal + tax
-
-      setInvoice({
-        invoice_number: generateInvoiceNumber(),
-        client_name: form.client_name,
-        client_email: form.client_email,
-        job_description: form.job_description,
-        line_items: data.line_items,
-        subtotal,
-        tax_rate: taxRate,
-        total,
-        due_date: form.due_date,
-        payment_notes: form.payment_notes,
-        created_at: new Date().toISOString(),
-      })
+      setInvoice({ invoice_number: generateInvoiceNumber(), client_name: form.client_name, client_email: form.client_email, job_description: form.job_description, line_items: data.line_items, subtotal, tax_rate: taxRate, total, due_date: form.due_date, payment_notes: form.payment_notes, created_at: new Date().toISOString() })
       setMode('result')
       setSaved(false)
     } catch {
@@ -97,32 +66,22 @@ export default function InvoicePage() {
   const handleSave = async () => {
     if (!user || !invoice) return
     setSaving(true)
-    const res = await fetch('/api/invoices', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(invoice)
-    })
-    if (res.ok) {
-      setSaved(true)
-      const data = await res.json()
-      setSavedInvoices(prev => [data.invoice, ...prev])
-    }
+    const res = await fetch('/api/invoices', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(invoice) })
+    if (res.ok) { setSaved(true); const data = await res.json(); setSavedInvoices(prev => [data.invoice, ...prev]) }
     setSaving(false)
   }
 
-  const handlePrint = () => window.print()
-
-  const inputStyle = {
-    width: '100%', background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.12)',
-    borderRadius: '10px', padding: '14px 16px', fontSize: '15px', color: '#fff', outline: 'none',
-    fontFamily: 'var(--font-inter), sans-serif', boxSizing: 'border-box' as const,
-  }
-
+  const inputStyle = { width: '100%', background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.12)', borderRadius: '10px', padding: '14px 16px', fontSize: '15px', color: '#fff', outline: 'none', fontFamily: 'var(--font-inter), sans-serif', boxSizing: 'border-box' as const }
   const progress = (stepIndex / STEPS.length) * 100
-
   const mediaTypes = ['Photo', 'Video', 'Both']
   const eventTypes = ['Wedding', 'Sports', 'Concert', 'Corporate', 'Birthday', 'Graduation', 'Fashion', 'Real Estate', 'Documentary', 'Other']
   const dueDates = ['Due on receipt', 'Net 7', 'Net 14', 'Net 30', 'Net 60']
+
+  if (authLoading) return (
+    <main style={{ minHeight: '100vh', background: 'linear-gradient(to bottom, #0a0a0a, #111827)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-inter), sans-serif' }}>
+      <div style={{ color: 'rgba(255,255,255,0.3)' }}>Loading...</div>
+    </main>
+  )
 
   return (
     <main style={{ minHeight: '100vh', background: 'linear-gradient(to bottom, #0a0a0a, #111827)', fontFamily: 'var(--font-inter), sans-serif' }}>
@@ -135,16 +94,11 @@ export default function InvoicePage() {
         </a>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <a href="/tools" style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', textDecoration: 'none' }}>← Tools</a>
-          {user ? (
-            <a href={`/u/${user.username}`} style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', textDecoration: 'none' }}>@{user.username}</a>
-          ) : (
-            <a href="/login" style={{ background: '#FFE500', color: '#000', fontSize: '12px', fontWeight: '700', padding: '8px 18px', borderRadius: '6px', textDecoration: 'none' }}>Log in</a>
-          )}
+          {user && <a href={`/u/${user.username}`} style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', textDecoration: 'none' }}>@{user.username}</a>}
         </div>
       </nav>
 
       <div style={{ maxWidth: '640px', margin: '0 auto', padding: '60px 24px' }} className="no-print">
-
         {mode === 'form' && (
           <>
             <div style={{ marginBottom: '48px' }}>
@@ -198,7 +152,7 @@ export default function InvoicePage() {
                   <div>
                     <label style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px', fontWeight: '600', letterSpacing: '0.04em', textTransform: 'uppercase' as const, marginBottom: '8px', display: 'block' }}>Describe the job *</label>
                     <textarea style={{ ...inputStyle, resize: 'none', height: '120px', lineHeight: '1.6' }}
-                      placeholder="e.g. 4 hour wedding coverage at The Lace Factory, New London CT. Shot ceremony and reception. Delivered 600 edited photos within 2 weeks."
+                      placeholder="e.g. 4 hour wedding coverage at The Lace Factory. Shot ceremony and reception. Delivered 600 edited photos within 2 weeks."
                       value={form.job_description} onChange={e => update('job_description', e.target.value)} />
                   </div>
                 </div>
@@ -219,9 +173,7 @@ export default function InvoicePage() {
                     ))}
                   </div>
                   <div>
-                    <label style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px', fontWeight: '600', letterSpacing: '0.04em', textTransform: 'uppercase' as const, marginBottom: '8px', display: 'block' }}>
-                      {form.rate_type === 'hourly' ? 'Hourly rate ($)' : 'Total amount ($)'}
-                    </label>
+                    <label style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px', fontWeight: '600', letterSpacing: '0.04em', textTransform: 'uppercase' as const, marginBottom: '8px', display: 'block' }}>{form.rate_type === 'hourly' ? 'Hourly rate ($)' : 'Total amount ($)'}</label>
                     <input style={inputStyle} type="number" placeholder="500" value={form.rate_amount} onChange={e => update('rate_amount', e.target.value)} />
                   </div>
                   <div>
@@ -250,7 +202,7 @@ export default function InvoicePage() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                   <div>
                     <label style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px', fontWeight: '600', letterSpacing: '0.04em', textTransform: 'uppercase' as const, marginBottom: '8px', display: 'block' }}>Due date</label>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                       {dueDates.map(d => (
                         <button key={d} onClick={() => update('due_date', d)}
                           style={{ padding: '12px 16px', borderRadius: '10px', border: `1.5px solid ${form.due_date === d ? '#FFE500' : 'rgba(255,255,255,0.08)'}`, background: form.due_date === d ? 'rgba(255,229,0,0.06)' : 'rgba(255,255,255,0.02)', color: form.due_date === d ? '#FFE500' : 'rgba(255,255,255,0.5)', fontSize: '13px', fontWeight: '600', cursor: 'pointer', fontFamily: 'var(--font-inter), sans-serif' }}>
@@ -289,7 +241,7 @@ export default function InvoicePage() {
               )}
             </div>
 
-            {user && savedInvoices.length > 0 && stepIndex === 0 && (
+            {savedInvoices.length > 0 && stepIndex === 0 && (
               <div style={{ marginTop: '64px', paddingTop: '48px', borderTop: '0.5px solid rgba(255,255,255,0.08)' }}>
                 <h2 style={{ color: '#fff', fontSize: '18px', fontWeight: '700', margin: '0 0 20px' }}>Saved invoices</h2>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -321,34 +273,26 @@ export default function InvoicePage() {
 
       {mode === 'result' && invoice && (
         <div>
-          {/* Action bar */}
           <div className="no-print" style={{ maxWidth: '760px', margin: '0 auto', padding: '0 24px 24px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
             <button onClick={() => { setMode('form'); setStepIndex(0); setSaved(false) }}
               style={{ padding: '10px 18px', borderRadius: '8px', border: '0.5px solid rgba(255,255,255,0.12)', background: 'transparent', color: 'rgba(255,255,255,0.5)', fontSize: '13px', cursor: 'pointer', fontFamily: 'var(--font-inter), sans-serif' }}>
               New invoice
             </button>
-            <button onClick={handlePrint}
+            <button onClick={() => window.print()}
               style={{ padding: '10px 18px', borderRadius: '8px', border: '0.5px solid rgba(255,255,255,0.12)', background: 'transparent', color: 'rgba(255,255,255,0.5)', fontSize: '13px', cursor: 'pointer', fontFamily: 'var(--font-inter), sans-serif' }}>
               🖨️ Print / Save PDF
             </button>
-            {user ? (
-              <button onClick={handleSave} disabled={saving || saved}
-                style={{ padding: '10px 18px', borderRadius: '8px', border: saved ? '0.5px solid rgba(34,197,94,0.3)' : 'none', background: saved ? 'rgba(34,197,94,0.15)' : '#FFE500', color: saved ? '#22C55E' : '#000', fontSize: '13px', fontWeight: '700', cursor: saved ? 'default' : 'pointer', fontFamily: 'var(--font-inter), sans-serif' }}>
-                {saving ? 'Saving...' : saved ? '✓ Saved' : 'Save to profile'}
-              </button>
-            ) : (
-              <a href="/login" style={{ padding: '10px 18px', borderRadius: '8px', background: '#FFE500', color: '#000', fontSize: '13px', fontWeight: '700', textDecoration: 'none' }}>Log in to save</a>
-            )}
+            <button onClick={handleSave} disabled={saving || saved}
+              style={{ padding: '10px 18px', borderRadius: '8px', border: saved ? '0.5px solid rgba(34,197,94,0.3)' : 'none', background: saved ? 'rgba(34,197,94,0.15)' : '#FFE500', color: saved ? '#22C55E' : '#000', fontSize: '13px', fontWeight: '700', cursor: saved ? 'default' : 'pointer', fontFamily: 'var(--font-inter), sans-serif' }}>
+              {saving ? 'Saving...' : saved ? '✓ Saved' : 'Save to profile'}
+            </button>
           </div>
 
-          {/* Invoice document */}
-          <div id="invoice-doc" style={{ maxWidth: '760px', margin: '0 auto', padding: '0 24px 60px' }}>
+          <div style={{ maxWidth: '760px', margin: '0 auto', padding: '0 24px 60px' }}>
             <div style={{ background: '#fff', borderRadius: '16px', padding: '60px', color: '#111' }} className="invoice-paper">
-
-              {/* Header */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '48px' }}>
                 <div>
-                  <div style={{ fontSize: '28px', fontWeight: '800', letterSpacing: '-0.03em', color: '#000', marginBottom: '4px' }}>{user?.business_name || user?.real_name || `@${user?.username}` || 'Your Name'}</div>
+                  <div style={{ fontSize: '28px', fontWeight: '800', letterSpacing: '-0.03em', color: '#000', marginBottom: '4px' }}>{user?.business_name || user?.real_name || `@${user?.username}`}</div>
                   {user?.email && <div style={{ color: '#666', fontSize: '13px' }}>{user.email}</div>}
                   {user?.phone && <div style={{ color: '#666', fontSize: '13px' }}>{user.phone}</div>}
                   {user?.address && <div style={{ color: '#666', fontSize: '13px' }}>{user.address}</div>}
@@ -361,14 +305,12 @@ export default function InvoicePage() {
                 </div>
               </div>
 
-              {/* Bill to */}
               <div style={{ marginBottom: '40px' }}>
                 <div style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#999', marginBottom: '8px' }}>Bill to</div>
                 <div style={{ fontSize: '16px', fontWeight: '700', color: '#000' }}>{invoice.client_name}</div>
                 {invoice.client_email && <div style={{ color: '#666', fontSize: '13px' }}>{invoice.client_email}</div>}
               </div>
 
-              {/* Job description */}
               {invoice.job_description && (
                 <div style={{ marginBottom: '32px', padding: '16px', background: '#f9f9f9', borderRadius: '8px' }}>
                   <div style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#999', marginBottom: '6px' }}>Project description</div>
@@ -376,7 +318,6 @@ export default function InvoicePage() {
                 </div>
               )}
 
-              {/* Line items */}
               <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '32px' }}>
                 <thead>
                   <tr style={{ borderBottom: '2px solid #000' }}>
@@ -398,7 +339,6 @@ export default function InvoicePage() {
                 </tbody>
               </table>
 
-              {/* Totals */}
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '40px' }}>
                 <div style={{ width: '240px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #eee' }}>
@@ -418,7 +358,6 @@ export default function InvoicePage() {
                 </div>
               </div>
 
-              {/* Payment instructions */}
               {invoice.payment_notes && (
                 <div style={{ borderTop: '1px solid #eee', paddingTop: '24px' }}>
                   <div style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#999', marginBottom: '8px' }}>Payment instructions</div>
@@ -426,7 +365,6 @@ export default function InvoicePage() {
                 </div>
               )}
 
-              {/* Footer */}
               <div style={{ marginTop: '48px', paddingTop: '24px', borderTop: '1px solid #eee', textAlign: 'center' }}>
                 <div style={{ color: '#ccc', fontSize: '11px' }}>Generated with Nodable · trynodable.com</div>
               </div>
